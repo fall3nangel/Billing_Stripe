@@ -4,7 +4,7 @@ title: Cancel payment (POST /cancel-payment)
 ---
 sequenceDiagram
     autonumber
-    participant USER
+    actor USER
     participant UserAPI
     participant BillingAPI
     participant PayAPI

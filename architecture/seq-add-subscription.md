@@ -4,7 +4,7 @@ title: Purchasing subscription (POST /add-subscription)
 ---
 sequenceDiagram
     autonumber
-    participant USER
+    actor USER
     participant UserAPI
     participant BillingAPI
     participant PayAPI
