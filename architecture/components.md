@@ -6,6 +6,23 @@ flowchart TD
     classDef api fill:#1168bd, stroke:#0b4884, color:#ffffff
     classDef client fill:#666, stroke:#0b4884, color:#ffffff
     classDef service fill:#85bbf0, stroke:#5d82a8, color:#000000
+    classDef database fill:#ffff00, stroke:#5d82a8, color:#000000
+    
+    Movies["Movies database
+    [Postgres]
+    
+    хранение фильмов, подписок на фильмы"]
+    
+    Users["Users database
+    [Postgres]
+    
+    хранение профиля пользователя"]
+    
+    Billing["Billing database
+    [Postgres]
+    
+    хранение платежей, начислений,
+    счетов на оплату"]
     
     Admin["Администратор
     [WEB Browser]
@@ -13,6 +30,13 @@ flowchart TD
     корректировка начислений,
     просмотр платежей/начислений/лс
     пользователей"]
+    
+    AdminPanel["Admin Panel
+    [Django, Postgres]
+    
+    просмотр состояния личных счетов пользователей,
+    просмотр платежей, создание персонифицированных скидок,
+    создание промокодов"]
     
     Client["Пользователь
     [WEB Browser]
@@ -84,10 +108,18 @@ flowchart TD
     передача событий по счетам
     в шину данных для других систем"]
     
-    Admin--"корректировка начисления"-->BillingAPI
-    Admin--"просмотр начислений"-->BillingAPI
-    Admin--"просмотр платежей"-->BillingAPI
-    Admin--"просмотр лс"-->BillingAPI
+    subgraph Admin Panel
+        Admin--"корректировка начисления"-->AdminPanel
+        Admin--"просмотр начислений"-->AdminPanel
+        Admin--"просмотр платежей"-->AdminPanel
+        Admin--"просмотр лс"-->AdminPanel
+        Admin--"назначение скидки"-->AdminPanel
+    end
+
+    Billing<---->AdminPanel
+    Movies<---->AdminPanel
+    Users<---->AdminPanel
+    Users<---->UserService
     Client--"купить подписку"-->UserAPI
     Client--"отменить платеж"-->UserAPI
     Client--"создать реккурентный платеж"-->UserAPI
@@ -106,6 +138,7 @@ flowchart TD
     PayAPI--"подтверждение платежа"-->Client
     BillingAPI--"счет выставлен"-->Queue2
     class UserAPI api
+    class AdminPanel api
     class UserService service
     class Cache service
     class PayAPI api
@@ -117,4 +150,7 @@ flowchart TD
     class Admin client
     class Queue1 service
     class Queue2 service
+    class Movies database
+    class Users database
+    class Billing database
 ```
