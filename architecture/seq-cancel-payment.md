@@ -9,16 +9,17 @@ sequenceDiagram
     participant BillingAPI
     participant PayAPI
     participant QUEUE
-    USER->>+UserAPI: call
+    USER->>+UserAPI: get payment
     UserAPI->>+BillingAPI: get payment details
     BillingAPI-->>-UserAPI: payment
+    UserAPI-->>-USER: payment
+    USER->>+UserAPI: cancel payment
     UserAPI->>+PayAPI: cancel payment
     PayAPI-->>-UserAPI: payment status
-    UserAPI->>+BillingAPI: update account
-    BillingAPI->>BillingAPI: cancel payment
-    BillingAPI->>BillingAPI: update account
-    BillingAPI->>BillingAPI: check subscription
-    BillingAPI-->>-UserAPI: account status
+    UserAPI->>+BillingAPI: delete payment
+    BillingAPI->>BillingAPI: delete payment
+    BillingAPI->>BillingAPI: check status
+    BillingAPI-->>-UserAPI: status
     UserAPI->>QUEUE: send notification
     UserAPI->>UserAPI: update role
     UserAPI->>UserAPI: refresh token

@@ -1,21 +1,21 @@
 ```mermaid
-flowchart RL
+flowchart TB
     classDef api fill:#1168bd, stroke:#0b4884, color:#ffffff
     classDef client fill:#666, stroke:#0b4884, color:#ffffff
     classDef service fill:#85bbf0, stroke:#5d82a8, color:#000000
     classDef database fill:#ffff00, stroke:#5d82a8, color:#000000
     
-    Movies["Movies database
+    Movies["Movies schema
     [Postgres]
     
     хранение фильмов, подписок на фильмы"]
     
-    Users["Users database
+    Users["Users schema
     [Postgres]
     
     хранение профиля пользователя"]
     
-    Billing["Billing database
+    Billing["Billing schema
     [Postgres]
     
     хранение платежей,
@@ -31,6 +31,7 @@ flowchart RL
     AdminPanel["Admin Panel
     [Django, Postgres]
     
+    создание продуктов(подписок),
     просмотр платежей/счетов,
     просмотр платежей, создание персонифицированных скидок,
     создание промокодов"]
