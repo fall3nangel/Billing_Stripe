@@ -1,8 +1,5 @@
 ```mermaid
----
-title: Component Diagram
----
-flowchart TD
+flowchart LR
     classDef api fill:#1168bd, stroke:#0b4884, color:#ffffff
     classDef client fill:#666, stroke:#0b4884, color:#ffffff
     classDef service fill:#85bbf0, stroke:#5d82a8, color:#000000
@@ -55,8 +52,14 @@ flowchart TD
     UserService["UserService
     [Postgres]
     
-    содержит контактные данные, приобретенные продукты,
-    права доступа к ресурсам системы пользователя"]
+    содержит контактные данные,
+    приобретенные продукты"]
+    
+    EntitlementService["EntitlementService
+    [Postgres]
+    
+    содержит права доступа пользователя
+    к ресурсам системы"]
     
     Cache["In-Memory Cache
     [Redis]
@@ -116,30 +119,48 @@ flowchart TD
         Admin--"назначение скидки"-->AdminPanel
     end
 
+    subgraph Users Service
+        UserAPI<--"CRUD"-->UserService
+        UserService<--"get/set"-->Cache
+        Users<---->UserService
+        Users<---->EntitlementService
+        UserAPI<--"CRUD"-->EntitlementService
+    end
+    
     Billing<---->AdminPanel
     Movies<---->AdminPanel
     Users<---->AdminPanel
-    Users<---->UserService
     Client--"купить подписку"-->UserAPI
     Client--"отменить платеж"-->UserAPI
     Client--"создать реккурентный платеж"-->UserAPI
     Client--"запросить выписку"-->BillingAPI
-    UserAPI<--"CRUD"-->UserService
-    UserService<--"get/set"-->Cache
     BillingAPI--"получение платежа"-->UserAPI
-    BillingAPI<--"CRUD"-->BillingService
+
     UserAPI--"создать платеж"-->PayAPI     
     UserAPI--"отменить платеж"-->PayAPI
-    Scheduler--"выставление периодических счетов на оплату"-->BillingAPI
-    PayAPI--"выполнить оплату"-->PayService
-    PayAPI--"отменить оплату"-->PayService
+
+    
+    subgraph Billing Service
+        BillingAPI<--"CRUD"-->BillingService
+        Scheduler--"выставление периодических счетов на оплату"-->BillingAPI
+        Billing<---->BillingService
+    end
+    
+    subgraph Payment Service
+        PayAPI--"выполнить оплату"-->PayService
+        PayAPI--"отменить оплату"-->PayService
+    end
+    
     PayAPI--"платеж совершен"-->Queue1
     PayAPI--"платеж отменен"-->Queue1
+    
     PayAPI--"подтверждение платежа"-->Client
     BillingAPI--"счет выставлен"-->Queue2
+    
     class UserAPI api
     class AdminPanel api
     class UserService service
+    class EntitlementService service
     class Cache service
     class PayAPI api
     class PayService service
