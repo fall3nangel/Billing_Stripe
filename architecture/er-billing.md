@@ -8,9 +8,9 @@ CUSTOMER {
     string fullname "Имя пользователя"
     string email "Почта"
     string phone "Телефон"
-    enum method_type ""
+    enum method_type "Метод оплаты"
     enum delivery_type "Способ доставки счетов"
-    enum status_type ""
+    enum status_type "Статус пользователя"
 }
 PAYMENT {
     uuid id "id оплаты"
