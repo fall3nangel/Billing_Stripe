@@ -21,9 +21,9 @@ PAYMENT {
 }
 INVOICE { 
     uuid id "id счета на оплату услуг"
-    uuid customer_id "id пользователя"
-    uuid product_id "id подписки для оплаты"
-    uuid movies_id "id фильма для оплаты"
+    uuid id_customer "id пользователя"
+    uuid id_product "id подписки для оплаты"
+    uuid id_movies "id фильма для оплаты"
     sting name "Сформированное имя счета"
     float amount "Сформированная стоимость счета"
     datetime fde "Начало действия услуг по счету"
@@ -56,15 +56,15 @@ PRODUCT {
     float price "Стоимость подписки"
 }
 
-MOVIES {
+MOVIE {
     uuid id "id фильма" 
     str name "Имя фильма" 
     price float "Стоимость фильма"
 }
 
-PRODUCT_MOVIES {
+PRODUCT_MOVIE {
     uuid id_product
-    uuid id_movies
+    uuid id_movie
 }
 INVOICE }|--|| PRODUCT: has
 PAYMENT }|--|| INVOICE: has
@@ -75,6 +75,6 @@ CUSTOMER  ||--|| DISCOUNT: has
 SUBSCRIBE  ||--|| PRODUCT: has
 DISCOUNT }|--|| PRODUCT: has
 PROMOTION ||--|| PRODUCT: has
-PRODUCT ||--|{ PRODUCT_MOVIES: has
-PRODUCT_MOVIES ||--|{ MOVIES: has
+PRODUCT ||--|{ PRODUCT_MOVIE: has
+PRODUCT_MOVIE ||--|{ MOVIE: has
 ```
