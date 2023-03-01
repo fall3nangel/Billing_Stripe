@@ -3,128 +3,78 @@
 title: Billing database
 ---
 erDiagram
-ACCOUNT {
-    uuid id PK 
-    uuid customer_id
-    int status_id
-    int method_id
-    int delivery_id
-    datetime fd
-    datetime td
-}
 CUSTOMER {
-    uuid id PK
-    string fullname
-    string email
-    string phone
-    datetime fd
-    datetime td
-}
-CALC {
-    uuid id PK 
-    uuid customer_id
-    uuid invoice_id
-    uuid product_id
-    float amount
-    datetime calc_dt
-    datetime fd
-    datetime td
+    uuid id "id пользователя"
+    string fullname "Имя пользователя"
+    string email "Почта"
+    string phone "Телефон"
+    enum method_type ""
+    enum delivery_type "Способ доставки счетов"
+    enum status_type ""
 }
 PAYMENT {
-    uuid id PK
-    uuid customer_id
-    uuid product_id
-    int currency_id
-    float amount
-    datetime pay_dt
-    datetime fd
-    datetime td
+    uuid id "id оплаты"
+    uuid id_invoice "id счета на оплату"
+    int id_currency "id ?"
+    float amount "Сумма оплаты"
+    datetime pay_dt "Дата оплаты"
 }
-STATUS_TYPE {
-    int id PK
-    string name
-    string desc
+INVOICE { 
+    uuid id "id счета на оплату услуг"
+    uuid customer_id "id пользователя"
+    uuid product_id "id подписки для оплаты"
+    uuid movies_id "id фильма для оплаты"
+    sting name "Сформированное имя счета"
+    float amount "Сформированная стоимость счета"
+    datetime fde "Начало действия услуг по счету"
+    datetime tde "Окончание действия услуг по счету"
 }
-DELIVERY_TYPE {
-    int id PK
-    string name
-    string desc
+SUBSCRIBE {
+    uuid id "id автоформирование счета"
+    uuid id_customer "id пользователся"
+    uuid id_product "id подписок"
 }
-METHOD_TYPE {
-    int id PK
-    string name
-    string desc
-}
-INVOICE {
-    uuid id PK
-    uuid account_id
-    float amount
-    datetime fde
-    datetime tde
-    datetime fd
-    datetime td
-}
-DISCOUNT {
-    uuid id PK
-    uuid customer_id
-    uuid product_id
-    float amount
-    datetime fd
-    datetime td
+DISCOUNT { 
+    uuid id "id скидки при формировании счета"
+    uuid id_customer "id пользователя"
+    uuid id_product "id подписки"
+    uuid id_movies "id фильма"
+    float amount "скидка"
 }
 PROMOTION {
-    uuid id PK
-    uuid customer_id
-    uuid product_id
-    float discount
-    datetime expiry_dt
-    datetime fd
-    datetime td
+    uuid id "id скидки при формировании счета"
+    uuid id_customer "id пользователя"
+    uuid id_product "id подписки"
+    uuid id_movies "id фильма"
+    float discount "скидка"
+    str code_word "Промокод"
+    datetime expiry_dt "Окончания действия промокода"
 }
 PRODUCT {
-    uuid id PK 
-    string name
-    int type_id
-    float price
-    datetime fd
-    datetime td
+    uuid id "id подписки" 
+    string name "Наименование"
+    float price "Стоимость подписки"
 }
-PRODUCT_SPECIFICATION {
-    uuid id PK
-    uuid product_id FK
-    uuid spec_id FK
+
+MOVIES {
+    uuid id "id фильма" 
+    str name "Имя фильма" 
+    price float "Стоимость фильма"
 }
-SPECIFICATION {
-    uuid id PK
-    string name
+
+PRODUCT_MOVIES {
+    uuid id_product
+    uuid id_movies
 }
-CUSTOMER_PRODUCT {
-    uuid id PK
-    uuid user_id FK
-    uuid product_id FK
-}
-PRODUCT_TYPE {
-    int id PK
-    string name
-    string desc
-}
-ACCOUNT }|--|| CUSTOMER: has
-DISCOUNT }|--|| CUSTOMER: has
-PROMOTION }|--|| CUSTOMER: has
-ACCOUNT }|--|| STATUS_TYPE: has
-ACCOUNT }|--|| DELIVERY_TYPE: has
-ACCOUNT }|--|| METHOD_TYPE: has
-CALC }|--|| INVOICE: has
-PAYMENT }|--|| CUSTOMER: has
-CALC }|--|| CUSTOMER: has
-INVOICE }|--|| ACCOUNT: has
-PAYMENT }|--|| PRODUCT: has
-CALC }|--|| PRODUCT: has
+INVOICE }|--|| PRODUCT: has
+PAYMENT }|--|| INVOICE: has
+CUSTOMER  ||--|| PROMOTION: has
+CUSTOMER  ||--}| INVOICE: has
+CUSTOMER  ||--|| SUBSCRIBE: has
+CUSTOMER  ||--|| DISCOUNT: has
+SUBSCRIBE  ||--|| PRODUCT: has
 DISCOUNT }|--|| PRODUCT: has
-PROMOTION }|--|| PRODUCT: has
-PRODUCT ||--o{ PRODUCT_SPECIFICATION: "belongs to"
-PRODUCT_SPECIFICATION }o--|| SPECIFICATION: references
-CUSTOMER ||--o{ CUSTOMER_PRODUCT: "belongs to"
-CUSTOMER_PRODUCT }o--|| PRODUCT: references
-PRODUCT }|--|| PRODUCT_TYPE: has
+PROMOTION ||--|| PRODUCT: has
+PRODUCT ||--|{ PRODUCT_MOVIES: has
+PRODUCT_MOVIES ||--|{ MOVIES: has
 ```
