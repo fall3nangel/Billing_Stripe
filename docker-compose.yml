@@ -1,0 +1,48 @@
+version: '3.5'
+services:
+  admin:
+    env_file:
+      - .env
+    expose:
+      - "8000"
+    container_name: django
+    environment:
+      POSTGRES__USER: ${POSTGRES__USER}
+      POSTGRES__PASSWORD: ${POSTGRES__PASSWORD}
+      POSTGRES__DB: ${POSTGRES__DB}
+      POSTGRES__HOST: "postgres_container"
+      SECRET_KEY: ${SECRET_KEY}
+      DEBUG: False
+    networks:
+      - movies
+    depends_on:
+      - postgres
+    volumes:
+      - ./admin_panel/static/:/var/www/static:ro
+    build: ./admin_panel/
+
+  postgres:
+    container_name: postgres_container
+    env_file:
+      - .env
+    image: postgres:13
+    environment:
+      POSTGRES_USER: ${POSTGRES__USER}
+      POSTGRES_PASSWORD: ${POSTGRES__PASSWORD}
+      POSTGRES_DB: ${POSTGRES__DB}
+      PGDATA: /data/postgres
+    volumes:
+       - postgres:/data/postgres
+       - ./sql/create_tables.sql:/docker-entrypoint-initdb.d/create_tables.sql
+    networks:
+      - movies
+    restart: unless-stopped
+
+volumes:
+    postgres:
+      name: graduate_project_postgres
+    pgadmin:
+
+networks:
+  movies:
+    driver: bridge
