@@ -5,8 +5,6 @@
 %%    }
 %%}%%
 flowchart TB
-
-    subgraph Роли
     
     Admin["Администратор
     [WEB Browser]"] 
@@ -14,7 +12,6 @@ flowchart TB
     Client["Пользователь
     [WEB Browser]"]
         
-    end
 
     subgraph "ETL"
     
