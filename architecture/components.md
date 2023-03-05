@@ -1,68 +1,84 @@
 ```mermaid
+%%%%{
+%%    init: {
+%%        "flowchart": {"defaultRenderer": "elk" }
+%%    }
+%%}%%
 flowchart TB
-    
-    Client["Пользователь
-        [WEB Browser]
-        
-        Управление профилем пользователя
-        (контактные данные, список продуктов),
-        оплата"]
+
+    subgraph Роли
     
     Admin["Администратор
-        [WEB Browser]
+    [WEB Browser]"] 
         
-        корректировка счетов,
-        просмотр платежей/счетов
-        пользователей"]
+    Client["Пользователь
+    [WEB Browser]"]
         
-    subgraph Сервис формирования продуктов
+    end
+
+    subgraph "ETL"
+    
+    Admin_panel_TO_UserService["
+        Перекачивает информацию о продуктах 
+        в бд сервиса пользователей
+    "]
+    
+    UserService_TO_EntitlementService["
+        Перекачивает информацию об оплаченных
+        счетах на действующую дату
+    "]
+    
+    end    
         
-        Movies["Movies schema
+    subgraph "Сервис формирования продуктов"
+        
+        AdminPanel["Admin Panel
+            [Django]
+            
+            Добавление фильмов,
+            Создание продуктов,
+            Просмотр счетов пользователя"]
+        
+        MovieDB["Movies schema
             [Postgres]
             
-            Хранение фильмов, подписок на фильмы"]
+            Хранение фильмов, продуктов"]
             
-        AdminPanel["Admin Panel
-            [Django, Postgres]
-            
-            Создание продуктов(подписок),
-            просмотр платежей/счетов,
-            просмотр платежей, создание персонифицированных скидок,
-            создание промокодов"]
+            AdminPanel<-->MovieDB
     end
     
-    subgraph Пользовательский сервис
+    
+    subgraph "Пользовательский сервис"
         UserAPI["UserAPI
             [Fastapi]
             Позволяет добавлять/удалять продукты,
             осуществлять/отменять оплату,
-            создавать реккурентные платежи"]
+            создавать рекуррентные платежи"]
         
-        UserService["UserService
+        Queue2["Queue
+            [RabbitMQ]
+            
+            "]
+        
+        UserDB["UserDB
             [Postgres]
             
-            Содержит контактные данные,
-            приобретенные продукты"]
-        
-        Users["Users schema
-            [Postgres]
+            Хранение профиля пользователя,
+            Хранение счетов пользователя их оплат,
+            Хранение подписок на продукты"]
             
-            Хранение профиля пользователя"]
-        
-        EntitlementService["EntitlementService
-            [Postgres]
+        Scheduler["Scheduler
+            []
             
-            Содержит права доступа пользователя
-            к ресурсам системы"]
-        
-        Cache["In-Memory Cache
-            [Redis]
+            Запуск периодической процедуры
+            выставления счетов"]
             
-            Содержит права доступа к ресурсам,
-            рефреш-токен пользователя"]
+        Scheduler--"Выставление периодических счетов на оплату"-->UserAPI
+        UserAPI--"Передача изменений о счетах в другие системы"-->Queue2
+        UserAPI<-->UserDB
     end
     
-    subgraph Сервис оплаты
+    subgraph "Сервис оплаты"
         PayAPI["PayAPI
             [Fastapi]
             
@@ -75,104 +91,88 @@ flowchart TB
             Осуществляет обращение
             к внешним платежным сервисам"]
         
-        Queue1["Queue
+        Queue["Queue
             [RabbitMQ]
             
-            передача событий по счетам
-            в шину данных для других систем"]
-    end
-    
-    subgraph Сервис биллинга
-        BillingAPI["BillingAPI
-            [Django]
+            Передача событий об оплатах
+            для других систем"]
             
-            позволяет выставлять счета на оплату
-            (в т.ч. реккурентных,
-            с учетом скидок и акций),"]
+        PayAPI--"платеж совершен"-->Queue
+        PayAPI--"платеж отменен"-->Queue
+        PayAPI--"выполнить оплату"-->PayService
+        PayAPI--"отменить оплату"-->PayService
         
-        BillingService["BillingService
+        end
+    
+    subgraph "Сервис выдачи прав просмотра"
+        
+        EntitlementAPI["EntitlementAPI
+            [FastApi]
+            
+            Генерирует токены с информацией
+            о продуктах, к которым разрешен доступ"]
+        
+        Cache["In-Memory Cache
+            [Redis]
+            
+            Кэширует выдачу токенов"]
+        
+        EntitlementDB["Entitlement scheme
             [Postgres]
             
-            содержит счета, платежи,
-            алгоритмы биллинга"]
-        
-        Billing["Billing schema
-            [Postgres]
-            
-            хранение платежей,
-            счетов на оплату"]
-        
-        Scheduler["Scheduler
-            []
-            
-            запуск периодической процедуры
-            выставления счетов"]
-    
-        Queue2["Queue
-            [RabbitMQ]
-            
-            передача событий по платежам
-            в шину данных для других систем"]
-    end
-    
-    Billing<---->AdminPanel
-    Movies<---->AdminPanel
-    Users<---->AdminPanel
-    
-    Admin--"корректировка счетов"-->AdminPanel
-    Admin--"просмотр счетов"-->AdminPanel
-    Admin--"просмотр платежей"-->AdminPanel
-    Admin--"назначение скидки"-->AdminPanel
+            Содержит оплаченные счета
+            на текущую дату"]
 
-    UserAPI<--"CRUD"-->UserService
-    UserService<--"get/set"-->Cache
-    EntitlementService<--"get/set"-->Cache
-    Users<---->UserService
-    Users<---->EntitlementService
-    UserAPI<--"CRUD"-->EntitlementService
+        EntitlementDB<-->EntitlementAPI
+        Cache<-->EntitlementAPI
+    end
     
     Client--"купить подписку"-->UserAPI
     Client--"отменить платеж"-->UserAPI
-    Client--"создать реккурентный платеж"-->UserAPI
-    Client--"запросить выписку"-->BillingAPI
-    BillingAPI--"получение платежа"-->UserAPI
+    Client--"создать рекуррентный платеж"-->UserAPI
+    Client--"запросить выписку"-->UserAPI
 
-    UserAPI--"создать платеж"-->PayAPI     
+    Admin--"просмотр счетов"-->AdminPanel
+    Admin--"просмотр платежей"-->AdminPanel
+    Admin--"назначение скидки"-->AdminPanel
+    Admin--"просмотр счетов"-->UserAPI
+        
+    UserAPI--"создать платеж"-->PayAPI
     UserAPI--"отменить платеж"-->PayAPI
+        
+    MovieDB-->Admin_panel_TO_UserService
+    Admin_panel_TO_UserService-->UserDB
+    
+    UserDB-->UserService_TO_EntitlementService
+    UserService_TO_EntitlementService-->EntitlementDB
 
-    BillingAPI<--"CRUD"-->BillingService
-    Scheduler--"выставление периодических счетов на оплату"-->BillingAPI
-    Billing<---->BillingService
-
-    PayAPI--"выполнить оплату"-->PayService
-    PayAPI--"отменить оплату"-->PayService
     
-    PayAPI--"платеж совершен"-->Queue1
-    PayAPI--"платеж отменен"-->Queue1
-    
-    PayAPI--"подтверждение платежа"-->Client
-    BillingAPI--"счет выставлен"-->Queue2
-    
-    class UserAPI api
+    class EntitlementAPI api
     class AdminPanel api
-    class UserService service
-    class EntitlementService service
-    class Cache service
     class PayAPI api
+    class UserAPI api
+    
+    class EntitlementService service
+    class UserService service
+    class Cache service
     class PayService service
-    class BillingAPI api
-    class BillingService service
     class Scheduler service
     class Client client
     class Admin client
-    class Queue1 service
+    
+    class Queue service
     class Queue2 service
-    class Movies database
-    class Users database
-    class Billing database
+    
+    class MovieDB database
+    class UserDB database
+    class EntitlementDB database
+    
+    class Admin_panel_TO_UserService etl
+    class UserService_TO_EntitlementService etl
     
     classDef api fill:#1168bd, stroke:#0b4884, color:#ffffff
     classDef client fill:#666, stroke:#0b4884, color:#ffffff
     classDef service fill:#85bbf0, stroke:#5d82a8, color:#000000
     classDef database fill:#ffff00, stroke:#5d82a8, color:#000000
+    classDef etl fill:#ff7777, stroke:#5d82a8, color:#000000
 ```
