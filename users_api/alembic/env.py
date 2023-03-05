@@ -5,6 +5,11 @@ from sqlalchemy import pool
 
 from alembic import context
 
+import sys
+
+sys.path = ['', '..'] + sys.path[1:]
+
+import models.user
 from db.postgres import Base
 
 # this is the Alembic Config object, which provides
@@ -27,6 +32,10 @@ target_metadata = Base.metadata
 # my_important_option = config.get_main_option("my_important_option")
 # ... etc.
 
+def include_object(object, name, type_, reflected, compare_to):
+    if type_ == 'table' and object.schema != "users":
+        return False
+    return True
 
 def run_migrations_offline() -> None:
     """Run migrations in 'offline' mode.
@@ -66,8 +75,15 @@ def run_migrations_online() -> None:
     )
 
     with connectable.connect() as connection:
+        # todo change on env
+        connection.execute("CREATE SCHEMA IF NOT EXISTS users; SET search_path TO users;")
+
         context.configure(
-            connection=connection, target_metadata=target_metadata
+            connection=connection,
+            version_table_schema="users",
+            target_metadata=target_metadata,
+            # include_object=include_object,
+            # include_schemas=True
         )
 
         with context.begin_transaction():

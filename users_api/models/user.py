@@ -10,7 +10,7 @@ from db.postgres import Base
 user_notification = Table(
     "UserNotificationUserGroup",
     Base.metadata,
-    Column("id", primary_key=True),
+    Column("id", UUID(as_uuid=True), primary_key=True),
     Column("user_id", ForeignKey("user.id"), primary_key=False),
     Column(
         "notification_user_group_id",
