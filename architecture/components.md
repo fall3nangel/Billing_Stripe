@@ -33,8 +33,7 @@ flowchart TB
             [Django]
             
             Добавление фильмов,
-            Создание продуктов,
-            Просмотр счетов пользователя"]
+            Создание продуктов"]
         
         MovieDB["Movies schema
             [Postgres]
@@ -129,10 +128,9 @@ flowchart TB
     Client--"создать рекуррентный платеж"-->UserAPI
     Client--"запросить выписку"-->UserAPI
 
-    Admin--"просмотр счетов"-->AdminPanel
-    Admin--"просмотр платежей"-->AdminPanel
-    Admin--"назначение скидки"-->AdminPanel
-    Admin--"просмотр счетов"-->UserAPI
+    Admin--"Добавление фильмов"-->AdminPanel
+    Admin--"Создание продуктов"-->AdminPanel
+    Admin--"Просмотр счетов"-->UserAPI
         
     UserAPI--"создать платеж"-->PayAPI
     UserAPI--"отменить платеж"-->PayAPI
