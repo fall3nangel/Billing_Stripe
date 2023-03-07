@@ -3,7 +3,6 @@ from sqlalchemy import select
 
 class DBService:
     def __init__(self, session):
-        # session.execute("SET search_path TO users;")
         self.session = session
 
     async def get_user(self, id: str):
@@ -26,10 +25,6 @@ class DBService:
             phone=phone,
             subscribed=False,
         )
-        '''result = await self.session.execute(
-            "SELECT * FROM pg_catalog.pg_tables WHERE schemaname != 'pg_catalog' AND schemaname != 'information_schema';")
-        for r in result:
-            print(r)'''
         self.session.add(user)
         await self.session.commit()
         return user

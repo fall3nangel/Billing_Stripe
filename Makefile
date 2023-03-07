@@ -36,3 +36,8 @@ make down:
 
 run_usersapi_local:
 	cd users_api && python3 main.py
+
+run_rabbit:
+	docker compose \
+		-f docker-compose.yml \
+		 up -d rabbitmq

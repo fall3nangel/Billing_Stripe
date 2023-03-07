@@ -3,10 +3,10 @@ from fastapi import FastAPI
 from fastapi.openapi.utils import get_openapi
 from fastapi.responses import ORJSONResponse
 
-from api.v1 import users
+from api.v1 import users, payments
 from core.config import settings
 from db.postgres import db
-
+from db.queue import get_rabbitmq, close_rabbitmq
 
 app = FastAPI(
     title=settings.project_name,
@@ -43,16 +43,17 @@ app.openapi = custom_openapi
 
 @app.on_event("startup")
 async def startup_event():
-    pass
+    await get_rabbitmq()
 
 
 @app.on_event("shutdown")
 async def shutdown_event():
+    await close_rabbitmq()
     await db.close()
 
 
 app.include_router(users.router, prefix="/api/v1/users", tags=["users"])
-
+app.include_router(payments.router, prefix="/api/v1/payments", tags=["payments"])
 
 if __name__ == "__main__":
     uvicorn.run(

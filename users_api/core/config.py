@@ -23,9 +23,17 @@ class Postgres(BaseSettings):
     password: str = Field("123qwe")
 
 
+class Rabbitmq(BaseModel):
+    server: str = Field("127.0.0.1")
+    port: int = Field(5672)
+    user: str = Field("guest")
+    password: str = Field("guest")
+
+
 class Settings(BaseSettings):
     users_app: UsersApp = Field(UsersApp())
     postgres: Postgres = Field(Postgres())
+    rabbitmq: Rabbitmq = Field(Rabbitmq())
     project_name: str = Field("graduate_work")
     debug: bool = Field(False)
 

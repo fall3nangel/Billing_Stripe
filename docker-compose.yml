@@ -38,6 +38,20 @@ services:
       - movies
     restart: unless-stopped
 
+  rabbitmq:
+    container_name: rabbitmq
+    image: rabbitmq:3.11.8-management
+    hostname: rabbitmq
+    restart: always
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      - RABBITMQ_DEFAULT_USER=${RABBITMQ__USER}
+      - RABBITMQ_DEFAULT_PASS=${RABBITMQ__PASSWORD}
+    networks:
+      - movies
+
 volumes:
     postgres:
       name: graduate_project_postgres
