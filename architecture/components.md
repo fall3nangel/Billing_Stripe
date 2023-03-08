@@ -108,7 +108,7 @@ flowchart TB
             выполнять отмену оплаты"]
     
         PayService["PayService
-            [CloudPayments]
+            [Stripe]
             
             Осуществляет обращение
             к внешним платежным сервисам"]
