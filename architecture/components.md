@@ -71,7 +71,8 @@ flowchart TB
         BillingQueue--"Создание/изменение платежа"-->BillingAPI
     
     end
-        
+     
+     
     subgraph "Сервис оплаты"
         PayAPI["PayAPI
             [Fastapi]
@@ -103,7 +104,6 @@ flowchart TB
         UserAPI["UserAPI
             [Fastapi]
             Позволяет добавлять/удалять подписки на продукты,
-            создавать рекуррентные платежи,
             Авторизирует пользователей"]
 
         
@@ -123,11 +123,13 @@ flowchart TB
             [Redis]
             
             Кэширует выдачу токенов"]
-            
-        Scheduler--"Выставление периодических счетов на оплату"-->UserAPI
+
+        Cache<-->UserAPI
+        UserDB<-->Scheduler
         UserAPI<-->UserDB
+
         
-        UserAPI<-->Cache
+
 
     end
 
@@ -148,7 +150,7 @@ flowchart TB
     MovieDB-->Admin_panel_TO_UserService
     Admin_panel_TO_UserService-->UserDB
     
-    UserAPI--"Создание счетов на оплату"-->BillingAPI
+    Scheduler--"Выставление периодических счетов на оплату"-->BillingAPI
     
     class AdminPanel api
     class PayAPI api
