@@ -9,6 +9,11 @@ services:
     ports:
       - "5432:5432"
 
+  billing:
+    build: ./billing_api/
+    ports:
+      - 8000:8000
+
   pgadmin:
     container_name: pgadmin_container
     image: dpage/pgadmin4
@@ -24,3 +29,7 @@ services:
       - movies
     restart: unless-stopped
 
+  rabbitmq:
+    ports:
+      - "5672:5672"
+      - "15672:15672"

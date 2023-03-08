@@ -28,6 +28,13 @@ run_admin_panel_service:
 		-f docker-compose.override.yml \
  		up --build admin
 
+run_billing_service:
+	cd admin_panel && python3 manage.py collectstatic --noinput
+	docker compose \
+ 		-f docker-compose.yml \
+		-f docker-compose.override.yml \
+ 		up --build billing
+
 make down:
 	docker compose \
 	-f docker-compose.yml \

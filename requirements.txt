@@ -1,1 +1,2 @@
 -r admin_panel/requirements.txt
+-r admin_panel/requirements.txt
