@@ -6,12 +6,9 @@
 %%}%%
 flowchart TB
     
-    Admin["Администратор
-    [WEB Browser]"] 
+    Admin["Администратор\n[WEB Browser]"] 
         
-    Client["Пользователь
-    [WEB Browser]"]
-        
+    Client["Пользователь\n[WEB Browser]"]
 
     subgraph "ETL"
     
@@ -62,11 +59,45 @@ flowchart TB
             
             Кэширует ответы на запросы
             на доступ к продуктам"]
+            
+        BillingQueue["Consumer
+            [RabbitMQ]
+            
+            Получение событий об оплатах"]
         
         BillingAPI--"Передача изменений о счетах в другие системы"-->Queue2
         BillingAPI<-->BillingDB
         BillingAPI<-->BillingCache
+        BillingQueue--"Создание/изменение платежа"-->BillingAPI
+    
     end
+        
+    subgraph "Сервис оплаты"
+        PayAPI["PayAPI
+            [Fastapi]
+            
+            Позволяет осуществлять оплату,
+            выполнять отмену оплаты"]
+    
+        PayService["PayService
+            [Stripe]
+            
+            Осуществляет обращение
+            к внешним платежным сервисам"]
+        
+        Queue["Queue
+            [RabbitMQ]
+            
+            Передача событий об оплатах
+            для других систем"]
+            
+        PayAPI--"платеж совершен"-->Queue
+        PayAPI--"платеж отменен"-->Queue
+        PayAPI--"выполнить оплату"-->PayService
+        PayAPI--"отменить оплату"-->PayService
+        
+    end
+    
     
     subgraph "Пользовательский сервис"
         UserAPI["UserAPI
@@ -99,32 +130,7 @@ flowchart TB
         UserAPI<-->Cache
 
     end
-    
-    subgraph "Сервис оплаты"
-        PayAPI["PayAPI
-            [Fastapi]
-            
-            Позволяет осуществлять оплату,
-            выполнять отмену оплаты"]
-    
-        PayService["PayService
-            [Stripe]
-            
-            Осуществляет обращение
-            к внешним платежным сервисам"]
-        
-        Queue["Queue
-            [RabbitMQ]
-            
-            Передача событий об оплатах
-            для других систем"]
-            
-        PayAPI--"платеж совершен"-->Queue
-        PayAPI--"платеж отменен"-->Queue
-        PayAPI--"выполнить оплату"-->PayService
-        PayAPI--"отменить оплату"-->PayService
-        
-    end
+
     
     
     Client--"купить подписку"-->UserAPI
@@ -142,7 +148,6 @@ flowchart TB
     MovieDB-->Admin_panel_TO_UserService
     Admin_panel_TO_UserService-->UserDB
     
-    
     UserAPI--"Создание счетов на оплату"-->BillingAPI
     
     class AdminPanel api
@@ -158,11 +163,14 @@ flowchart TB
     class Client client
     class Admin client
     
+    
     class Cache service
     class BillingCache service
     
     class Queue service
     class Queue2 service
+    class BillingQueue service
+    
     
     class MovieDB database
     class UserDB database
