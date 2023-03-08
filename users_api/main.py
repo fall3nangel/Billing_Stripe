@@ -1,4 +1,5 @@
 import uvicorn
+import aioredis
 from fastapi import FastAPI
 from fastapi.openapi.utils import get_openapi
 from fastapi.responses import ORJSONResponse
@@ -7,6 +8,7 @@ from api.v1 import users, invoices
 from core.config import settings
 from db.postgres import db
 from db.queue import get_rabbitmq, close_rabbitmq
+from db.redis import redis
 
 app = FastAPI(
     title=settings.project_name,
@@ -44,12 +46,17 @@ app.openapi = custom_openapi
 @app.on_event("startup")
 async def startup_event():
     await get_rabbitmq()
+    redis = await aioredis.create_redis_pool(
+        address=(settings.redis.host, settings.redis.port), minsize=10, maxsize=20
+    )
 
 
 @app.on_event("shutdown")
 async def shutdown_event():
     await close_rabbitmq()
     await db.close()
+    redis.close()
+    await redis.wait_closed()
 
 
 app.include_router(users.router, prefix="/api/v1/users", tags=["users"])

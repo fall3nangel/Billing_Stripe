@@ -41,3 +41,9 @@ run_rabbit:
 	docker compose \
 		-f docker-compose.yml \
 		 up -d rabbitmq
+
+run_redis:
+	docker compose \
+		-f docker-compose.yml \
+		 up -d redis
+
