@@ -7,7 +7,6 @@ from sqlalchemy.orm import relationship
 
 from db.postgres import Base
 
-
 user_role = Table(
     "user_role_link",
     Base.metadata,
@@ -33,6 +32,6 @@ class Role(Base):
     name = Column(String, nullable=False)
 
     class Meta:
-        db_table = 'users"."role'
+        db_table = "role"
         verbose_name = "role"
         verbose_name_plural = "roles"

@@ -5,7 +5,7 @@ from pydantic import BaseModel
 
 
 class InvoiceResponse(BaseModel):
-    id: UUID
+    id: str
     cost: int
 
 

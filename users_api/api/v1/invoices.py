@@ -1,4 +1,6 @@
 import uuid
+import aiohttp
+import asyncio
 from http import HTTPStatus
 from fastapi import APIRouter, Body, Depends, HTTPException, Request
 from fastapi.responses import RedirectResponse
@@ -14,7 +16,7 @@ router = APIRouter()
 
 
 @router.get(
-    "/invoice",
+    "/test-invoice/{inv_id}",
     responses={
         int(HTTPStatus.OK): {
             "model": InvoiceResponse,
@@ -23,14 +25,14 @@ router = APIRouter()
     },
     summary="Счет на оплату",
     description="Счет на оплату подписки с учетом скидки и активных купонов",
-    tags=["payments"],
-    dependencies=[Depends(auth)],
+    tags=["invoices"],
+    # dependencies=[Depends(auth)],
 )
 async def get_invoice(
-    sub_id: str,
+    inv_id: str,
 ) -> InvoiceResponse:
     return InvoiceResponse(
-        id=str(sub_id),
+        id=str(inv_id),
         cost=1000
     )
 
@@ -45,13 +47,15 @@ async def get_invoice(
     },
     summary="Запрос на совершение платежа",
     description="Совершение платежа по выставленному счету на оплату",
-    tags=["payments"],
-    dependencies=[Depends(auth)],
+    tags=["invoices"],
+    # dependencies=[Depends(auth)],
 )
 async def make_payment(
     data: PaymentRequest = Body(default=None),
 ) -> PaymentResponse:
-
+    user_id = "ivanov"
+    url: str = f"http://0.0.0.0:8000/api/v1/payments/make-payment/{user_id}"
+    await task(url)
     return PaymentResponse(
         id=str(data.id),
         accesss_token="",
@@ -68,7 +72,7 @@ async def make_payment(
     },
     summary="Отмена платежа",
     description="Отмена платежа",
-    tags=["payments"],
+    tags=["invoices"],
     dependencies=[Depends(auth)],
 )
 async def cancel_payment(
@@ -86,13 +90,24 @@ async def cancel_payment(
     },
     summary="Периодический счет на оплату",
     description="Периодический счет на оплату подписки с учетом скидки и активных купонов",
-    tags=["payments"],
-    dependencies=[Depends(auth)],
+    tags=["invoices"],
+    # dependencies=[Depends(auth)],
 )
-async def get_invoice(
+async def create_invoice(
     user_id: str,
 ) -> InvoiceResponse:
+
     return InvoiceResponse(
         id=str(user_id),
         cost=1000
     )
+
+async def request(session, url: str):
+    async with session.get(url) as response:
+        return await response.text()
+
+async def task(url: str):
+    async with aiohttp.ClientSession() as session:
+        task = request(session, url)
+        result = await asyncio.gather(task)
+        print(result)

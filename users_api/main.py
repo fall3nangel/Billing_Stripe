@@ -3,7 +3,7 @@ from fastapi import FastAPI
 from fastapi.openapi.utils import get_openapi
 from fastapi.responses import ORJSONResponse
 
-from api.v1 import users, payments
+from api.v1 import users, invoices
 from core.config import settings
 from db.postgres import db
 from db.queue import get_rabbitmq, close_rabbitmq
@@ -53,7 +53,7 @@ async def shutdown_event():
 
 
 app.include_router(users.router, prefix="/api/v1/users", tags=["users"])
-app.include_router(payments.router, prefix="/api/v1/payments", tags=["payments"])
+app.include_router(invoices.router, prefix="/api/v1/invoices", tags=["invoices"])
 
 if __name__ == "__main__":
     uvicorn.run(

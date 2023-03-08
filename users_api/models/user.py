@@ -7,42 +7,14 @@ from sqlalchemy.orm import relationship
 
 from db.postgres import Base
 
-
-user_role = Table(
-    "user_role_link",
-    Base.metadata,
-    Column("id", UUID(as_uuid=True), primary_key=True),
-    Column("user_id", ForeignKey('users"."user.id'), primary_key=False),
-    Column(
-        "role_id",
-        ForeignKey("role.id"),
-        primary_key=False,
-    ),
-)
-
-
-class Role(Base):
-    __tablename__ = "role"
-    id = Column(
-        UUID(as_uuid=True),
-        primary_key=True,
-        default=uuid.uuid4,
-        unique=True,
-        nullable=False,
-    )
-    name = Column(String, nullable=False)
-
-    class Meta:
-        db_table = 'users"."role'
-        verbose_name = "role"
-        verbose_name_plural = "roles"
+from models.role import Role, user_role
 
 
 user_notification = Table(
-    "users.UserNotificationUserGroup",
+    "UserNotificationUserGroup",
     Base.metadata,
     Column("id", UUID(as_uuid=True), primary_key=True),
-    Column("user_id", ForeignKey('users"."user.id'), primary_key=False),
+    Column("user_id", ForeignKey("user.id"), primary_key=False),
     Column(
         "notification_user_group_id",
         ForeignKey("notificationgroup.id"),
@@ -63,7 +35,7 @@ class NotificationGroup(Base):
     name = Column(String, nullable=False)
 
     class Meta:
-        db_table = 'users"."notificationgroup'
+        db_table = "notificationgroup"
         verbose_name = "notificationgroup"
         verbose_name_plural = "notificationgroups"
 
