@@ -20,11 +20,6 @@ flowchart TB
         в бд сервиса пользователей
     "]
     
-    UserService_TO_EntitlementService["
-        Перекачивает информацию об оплаченных
-        счетах на действующую дату
-    "]
-    
     end    
         
     subgraph "Сервис формирования продуктов"
@@ -43,35 +38,66 @@ flowchart TB
             AdminPanel<-->MovieDB
     end
     
+    subgraph "Биллинговый сервис"
+        BillingAPI["BillingAPI
+            [Fastapi]
+            Хранит информацию о счетах,
+            Подтверждает оплату,
+            Авторизует доступ к фильмам
+            "]
+                    
+        Queue2["Queue
+            [RabbitMQ]
+            
+            "]
+            
+        BillingDB["BillingDB
+            [Postgres]
+            
+            Хранение счетов,
+            Хранение оплат"]
+            
+        BillingCache["In-Memory Cache
+            [Redis]
+            
+            Кэширует ответы на запросы
+            доступным к фильмам"]
+        
+        BillingAPI--"Передача изменений о счетах в другие системы"-->Queue2
+        BillingAPI<-->BillingDB
+        BillingAPI<-->BillingCache
+    end
     
     subgraph "Пользовательский сервис"
         UserAPI["UserAPI
             [Fastapi]
             Позволяет добавлять/удалять подписки на продукты,
-            осуществлять/отменять оплату,
-            создавать рекуррентные платежи"]
-        
-        Queue2["Queue
-            [RabbitMQ]
-            
-            "]
+            создавать рекуррентные платежи,
+            Авторизирует пользователей"]
+
         
         UserDB["UserDB
             [Postgres]
             
             Хранение профиля пользователя,
-            Хранение счетов пользователя их оплат,
             Хранение подписок на продукты"]
             
         Scheduler["Scheduler
             []
             
             Запуск периодической процедуры
-            выставления счетов"]
+            выставления счетов по подписке"]
+        
+        Cache["In-Memory Cache
+            [Redis]
+            
+            Кэширует выдачу токенов"]
             
         Scheduler--"Выставление периодических счетов на оплату"-->UserAPI
-        UserAPI--"Передача изменений о счетах в другие системы"-->Queue2
         UserAPI<-->UserDB
+        
+        UserAPI<-->Cache
+
     end
     
     subgraph "Сервис оплаты"
@@ -98,62 +124,42 @@ flowchart TB
         PayAPI--"выполнить оплату"-->PayService
         PayAPI--"отменить оплату"-->PayService
         
-        end
-    
-    subgraph "Сервис выдачи прав просмотра"
-        
-        EntitlementAPI["EntitlementAPI
-            [FastApi]
-            
-            Генерирует токены с информацией
-            о продуктах, к которым разрешен доступ"]
-        
-        Cache["In-Memory Cache
-            [Redis]
-            
-            Кэширует выдачу токенов"]
-        
-        EntitlementDB["Entitlement scheme
-            [Postgres]
-            
-            Содержит оплаченные счета
-            на текущую дату"]
-
-        EntitlementDB<-->EntitlementAPI
-        Cache<-->EntitlementAPI
     end
     
+    
     Client--"купить подписку"-->UserAPI
-    Client--"отменить платеж"-->UserAPI
+    Client--"отменить платеж"-->BillingAPI
     Client--"создать рекуррентный платеж"-->UserAPI
-    Client--"запросить выписку"-->UserAPI
+    Client--"запросить выписку"-->BillingAPI
 
     Admin--"Добавление фильмов"-->AdminPanel
     Admin--"Создание продуктов"-->AdminPanel
-    Admin--"Просмотр счетов"-->UserAPI
+    Admin--"Просмотр счетов и оплат"-->BillingAPI
         
-    UserAPI--"создать платеж"-->PayAPI
-    UserAPI--"отменить платеж"-->PayAPI
+    BillingAPI--"создать платеж"-->PayAPI
+    BillingAPI--"отменить платеж"-->PayAPI
         
     MovieDB-->Admin_panel_TO_UserService
     Admin_panel_TO_UserService-->UserDB
     
-    UserDB-->UserService_TO_EntitlementService
-    UserService_TO_EntitlementService-->EntitlementDB
-
     
-    class EntitlementAPI api
+    UserAPI--"Создание счетов на оплату"-->BillingAPI
+    
     class AdminPanel api
     class PayAPI api
     class UserAPI api
+    class BillingAPI api
     
     class EntitlementService service
     class UserService service
-    class Cache service
+
     class PayService service
     class Scheduler service
     class Client client
     class Admin client
+    
+    class Cache service
+    class BillingCache service
     
     class Queue service
     class Queue2 service
@@ -161,9 +167,9 @@ flowchart TB
     class MovieDB database
     class UserDB database
     class EntitlementDB database
+    class BillingDB database
     
     class Admin_panel_TO_UserService etl
-    class UserService_TO_EntitlementService etl
     
     classDef api fill:#1168bd, stroke:#0b4884, color:#ffffff
     classDef client fill:#666, stroke:#0b4884, color:#ffffff
