@@ -35,7 +35,7 @@ run_billing_service:
 		-f docker-compose.override.yml \
  		up --build billing
 
-make down:
+down:
 	docker compose \
 	-f docker-compose.yml \
 	-f docker-compose.override.yml \
@@ -47,10 +47,12 @@ run_usersapi_local:
 run_rabbit:
 	docker compose \
 		-f docker-compose.yml \
+		-f docker-compose.override.yml \
 		 up -d rabbitmq
 
 run_redis:
 	docker compose \
 		-f docker-compose.yml \
+		-f docker-compose.override.yml \
 		 up -d redis
 

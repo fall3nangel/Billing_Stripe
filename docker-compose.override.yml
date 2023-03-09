@@ -29,6 +29,10 @@ services:
       - movies
     restart: unless-stopped
 
+  redis:
+    ports:
+      - "6379:6379"
+
   rabbitmq:
     ports:
       - "5672:5672"
