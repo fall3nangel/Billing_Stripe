@@ -10,9 +10,9 @@ from core.config import settings
 
 POSTGRES_URL = f"postgresql+asyncpg://{settings.postgres.user}:{settings.postgres.password}@{settings.postgres.host}:{settings.postgres.port}/{settings.postgres.db}"
 
-# schema = "invoice"
+schema = "users"
 engine = create_async_engine(POSTGRES_URL, echo=True)
-# engine.execution_options(schema_translate_map={None: schema})
+engine.execution_options(schema_translate_map={None: schema})
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine, class_=AsyncSession)
 Base = declarative_base()
