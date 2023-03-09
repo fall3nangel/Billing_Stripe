@@ -1,3 +1,17 @@
+x-postgres: &postgres-environments
+  POSTGRES__USER: ${POSTGRES__USER}
+  POSTGRES__PASSWORD: ${POSTGRES__PASSWORD}
+  POSTGRES__DB: ${POSTGRES__DB}
+  POSTGRES__HOST: "postgres_container"
+
+x-debug: &debug-environments
+  DEBUG: True
+
+x-rabbit: &rabbit-environments
+  RABBITMQ__USER: ${RABBITMQ__USER}
+  RABBITMQ__PASSWORD: ${RABBITMQ__PASSWORD}
+  RABBITMQ__SERVER: rabbitmq
+
 version: '3.5'
 services:
   admin:
@@ -7,12 +21,9 @@ services:
       - "8000"
     container_name: django
     environment:
-      POSTGRES__USER: ${POSTGRES__USER}
-      POSTGRES__PASSWORD: ${POSTGRES__PASSWORD}
-      POSTGRES__DB: ${POSTGRES__DB}
-      POSTGRES__HOST: "postgres_container"
+      <<: *postgres-environments
+      <<: *debug-environments
       SECRET_KEY: ${SECRET_KEY}
-      DEBUG: False
     networks:
       - movies
     depends_on:
@@ -20,6 +31,19 @@ services:
     volumes:
       - ./admin_panel/static/:/var/www/static:ro
     build: ./admin_panel/
+
+  billing:
+    container_name: billing
+    image: billing
+    networks:
+      - movies
+    environment:
+      <<: *postgres-environments
+      <<: *debug-environments
+      <<: *rabbit-environments
+    depends_on:
+      - postgres
+      - rabbitmq
 
   postgres:
     container_name: postgres_container
@@ -43,9 +67,6 @@ services:
     image: rabbitmq:3.11.8-management
     hostname: rabbitmq
     restart: always
-    ports:
-      - "5672:5672"
-      - "15672:15672"
     environment:
       - RABBITMQ_DEFAULT_USER=${RABBITMQ__USER}
       - RABBITMQ_DEFAULT_PASS=${RABBITMQ__PASSWORD}
@@ -57,8 +78,6 @@ services:
     image: 'bitnami/redis:latest'
     environment:
       - ALLOW_EMPTY_PASSWORD=yes
-    ports:
-      - "6379:6379"
     networks:
       - movies
 

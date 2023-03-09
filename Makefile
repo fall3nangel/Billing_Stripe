@@ -28,7 +28,14 @@ run_admin_panel_service:
 		-f docker-compose.override.yml \
  		up --build admin
 
-make down:
+run_billing_service:
+	cd admin_panel && python3 manage.py collectstatic --noinput
+	docker compose \
+ 		-f docker-compose.yml \
+		-f docker-compose.override.yml \
+ 		up --build billing
+
+down:
 	docker compose \
 	-f docker-compose.yml \
 	-f docker-compose.override.yml \
@@ -40,10 +47,12 @@ run_usersapi_local:
 run_rabbit:
 	docker compose \
 		-f docker-compose.yml \
+		-f docker-compose.override.yml \
 		 up -d rabbitmq
 
 run_redis:
 	docker compose \
 		-f docker-compose.yml \
+		-f docker-compose.override.yml \
 		 up -d redis
 

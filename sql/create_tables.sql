@@ -1,2 +1,3 @@
 CREATE SCHEMA content;
-ALTER ROLE app SET search_path TO content,public;
+CREATE SCHEMA invoice;
+ALTER ROLE app SET search_path TO content,invoice,public;
