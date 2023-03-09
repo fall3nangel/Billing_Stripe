@@ -1,2 +1,3 @@
 -r admin_panel/requirements.txt
--r admin_panel/requirements.txt
+-r users_api/requirements.txt
+-r billing/requirements.txt

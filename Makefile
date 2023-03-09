@@ -1,4 +1,4 @@
-#!make
+make:#!make
 include .env
 export
 
@@ -40,3 +40,17 @@ make down:
 	-f docker-compose.yml \
 	-f docker-compose.override.yml \
 	down --remove-orphans
+
+run_usersapi_local:
+	cd users_api && python3 main.py
+
+run_rabbit:
+	docker compose \
+		-f docker-compose.yml \
+		 up -d rabbitmq
+
+run_redis:
+	docker compose \
+		-f docker-compose.yml \
+		 up -d redis
+

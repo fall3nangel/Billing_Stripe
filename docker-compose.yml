@@ -73,6 +73,16 @@ services:
     networks:
       - movies
 
+  redis:
+    container_name: redis
+    image: 'bitnami/redis:latest'
+    environment:
+      - ALLOW_EMPTY_PASSWORD=yes
+    ports:
+      - "6379:6379"
+    networks:
+      - movies
+
 volumes:
     postgres:
       name: graduate_project_postgres
