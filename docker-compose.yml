@@ -38,6 +38,30 @@ services:
       - movies
     restart: unless-stopped
 
+  rabbitmq:
+    container_name: rabbitmq
+    image: rabbitmq:3.11.8-management
+    hostname: rabbitmq
+    restart: always
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      - RABBITMQ_DEFAULT_USER=${RABBITMQ__USER}
+      - RABBITMQ_DEFAULT_PASS=${RABBITMQ__PASSWORD}
+    networks:
+      - movies
+
+  redis:
+    container_name: redis
+    image: 'bitnami/redis:latest'
+    environment:
+      - ALLOW_EMPTY_PASSWORD=yes
+    ports:
+      - "6379:6379"
+    networks:
+      - movies
+
 volumes:
     postgres:
       name: graduate_project_postgres
