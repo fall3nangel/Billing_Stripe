@@ -17,7 +17,7 @@ router = APIRouter()
     tags=["invoices"],
     # dependencies=[Depends(auth)],
 )
-async def get_invoice(
+async def add_invoice(
     inv_id: str,
     db: DBService = Depends(get_db_service),
 ):
