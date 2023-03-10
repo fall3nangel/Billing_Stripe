@@ -44,9 +44,8 @@ app.openapi = custom_openapi
 @app.on_event("startup")
 async def startup_event():
     await get_rabbitmq()
-    async with engine.begin() as conn:
-        #await conn.run_sync(Base.metadata.drop_all)
-        await conn.run_sync(Base.metadata.create_all)
+    # async with engine.begin() as conn:
+    #     await conn.run_sync(Base.metadata.create_all)
 
 
 @app.on_event("shutdown")

@@ -44,6 +44,7 @@ services:
     depends_on:
       - postgres
       - rabbitmq
+      - redis
 
   postgres:
     container_name: postgres_container
