@@ -5,16 +5,14 @@ import psycopg2
 from dotenv import load_dotenv
 from psycopg2.extras import DictCursor
 
-from convertors import movie_converter, product_converter
+from convertors import movie_converter, product_converter, product_movie_pair_converter
 
 # from backoff import backoff
-# from converters import converter_genres, converter, converter_persons
 from etl import PostgresExtractor, PostgresLoader
-from models.admin_panel import AdminPanelMovies, AdminPanelProduct
+from models.admin_panel import AdminPanelMovie, AdminPanelProduct, AdminPanelProductMoviePair
 from logger import logger
 
-# from models import FetchedGenres, FetchedFilmWorks, FetchedPersons
-from query_executors.movies import query_get_movies, query_get_products
+from query_executors.movies import query_get_movies, query_get_products, query_get_product_movie_pairs
 from config import settings
 from storage import JsonFileStorage, State
 
@@ -23,8 +21,9 @@ BASE_DIR = Path(__file__).resolve().parent
 load_dotenv()
 
 step_extractors = [
-    # ("movie", AdminPanelMovies, query_get_movies, movie_converter),
+    ("movie", AdminPanelMovie, query_get_movies, movie_converter),
     ("product", AdminPanelProduct, query_get_products, product_converter),
+    ("product_movie_link", AdminPanelProductMoviePair, query_get_product_movie_pairs, product_movie_pair_converter)
 ]
 
 
@@ -47,13 +46,13 @@ def postgres_to_elastic():
         for billing_bd_name, validator, query_executor, converter_executor in step_extractors:
             logger.info("Заполнение индекса %s", billing_bd_name)
             for data in pg_extractor.get_updated(validator=validator, query_executor=query_executor):
-                print(data)
+                logger.debug("Extracted data: %s", data)
                 billing_format_data = converter_executor(data)
                 pg_loader.save_all_data(db=billing_bd_name, inserted_data=billing_format_data)
                 time.sleep(1)
-    #
-    #     state.set_state("last_time", expose_last_time)
-    #     logger.info("Сохранено состояние %s", expose_last_time)
+
+        state.set_state("last_time", expose_last_time)
+        logger.info("Сохранено состояние %s", expose_last_time)
 
 
 if __name__ == "__main__":

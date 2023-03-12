@@ -76,7 +76,7 @@ class Product(UUIDMixin, TimeStampedMixin):
         return self.name
 
 
-class FilmworkProduct(UUIDMixin, TimeStampedCreateMixin):
+class FilmworkProduct(UUIDMixin, TimeStampedMixin):
     filmwork = models.ForeignKey(to=Filmwork, verbose_name=_("filmwork"), on_delete=models.CASCADE)
     product = models.ForeignKey(to=Product, verbose_name=_("product"), on_delete=models.CASCADE)
 

@@ -3,7 +3,7 @@ import datetime
 from pydantic import BaseModel
 
 
-class BillingMovies(BaseModel):
+class BillingMovie(BaseModel):
     """
     Модель фильмов для запроса в бд постгреса
     """
@@ -22,3 +22,13 @@ class BillingProduct(BaseModel):
     name: str
     price: int
     duration: str
+
+
+class BillingProductMoviePair(BaseModel):
+    """
+    Модель фильмов для запроса в бд постгреса
+    """
+
+    id: str
+    product_id: str
+    movie_id: str

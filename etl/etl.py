@@ -7,6 +7,7 @@ from pydantic import ValidationError
 from config import settings
 from logger import logger
 
+
 class PostgresExtractor:
     """
     Порционное получение актуальных данных по фильмам из БД
@@ -46,8 +47,7 @@ class PostgresExtractor:
             yield models_list
             offset = offset + self.limit
 
-def astuple():
-    return
+
 class PostgresLoader:
     def __init__(self, connect: pg_connection):
         self.connect = connect
@@ -75,39 +75,3 @@ class PostgresLoader:
 
     def commit_data(self):
         self.connect.commit()
-
-
-# class ElasticsearchLoader:
-#     """
-#     Загрузчик данных в эластик
-#     """
-#
-#     def __init__(self, *args, **kwargs):
-#         """ """
-#         self.connect = Elasticsearch(*args, **kwargs)
-#
-#     def create_indexes_if_not_exist(self):
-#         for index, crated_schemas in elastic_create_index_schemes.items():
-#             try:
-#                 self.connect.indices.create(index=index, body=crated_schemas)
-#                 logger.info(f"Создан index для %s", index)
-#             except elasticsearch.exceptions.BadRequestError as error:
-#                 if error.message == "resource_already_exists_exception":
-#                     logger.debug(f"Используется ранее созданный индекс для %s", index)
-#                     continue
-#                 raise error
-#
-#     def push(self, data: list[ElasticFilmWorks], index: str):
-#         """
-#         Вычитывает подготовленные данные из временного хранилища и загружает данные в эластик
-#         :param data: Список фильмов, конвертированных в формат эластика
-#         """
-#         body = []
-#         for person in data:
-#             body.append({"index": {"_id": person.id}})
-#             body.append(person.dict())
-#         response = self.connect.bulk(index=index, body=body)
-#         if response["errors"]:
-#             logger.exception("Ошибка записи в elasticsearch\n%s", response["errors"])
-#             logger.exception(body)
-#             raise Exception(response)
