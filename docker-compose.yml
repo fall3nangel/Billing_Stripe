@@ -63,6 +63,18 @@ services:
       - movies
     restart: unless-stopped
 
+  etl:
+    container_name: etl
+    restart: always
+    image: etl
+    build: ./etl/
+    networks:
+      - movies
+    environment:
+      <<: *postgres-environments
+    depends_on:
+      - postgres
+
   rabbitmq:
     container_name: rabbitmq
     image: rabbitmq:3.11.8-management

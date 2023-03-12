@@ -35,6 +35,12 @@ run_billing_service:
 		-f docker-compose.override.yml \
  		up --build billing
 
+run_etl_service:
+	docker compose \
+ 		-f docker-compose.yml \
+		-f docker-compose.override.yml \
+ 		up --build etl
+
 down:
 	docker compose \
 	-f docker-compose.yml \
