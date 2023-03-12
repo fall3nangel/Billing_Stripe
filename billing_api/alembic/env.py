@@ -1,20 +1,18 @@
+import sys
 from logging.config import fileConfig
 
-from sqlalchemy import engine_from_config
-from sqlalchemy import pool
+from sqlalchemy import engine_from_config, pool
 
 from alembic import context
-import sys
 
-sys.path = ['', '..'] + sys.path[1:]
+sys.path = ["", ".."] + sys.path[1:]
 
 import models.invoice
+import models.payment
 import models.product
-import models.user
 import models.role
-
+import models.user
 from db.postgres import Base
-
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -76,12 +74,14 @@ def run_migrations_online() -> None:
 
     with connectable.connect() as connection:
         # todo change on env
-        connection.execute("CREATE SCHEMA IF NOT EXISTS users; SET search_path TO users;")
+        connection.execute(
+            "CREATE SCHEMA IF NOT EXISTS users; SET search_path TO users;"
+        )
 
         context.configure(
             connection=connection,
             version_table_schema="users",
-            target_metadata=target_metadata
+            target_metadata=target_metadata,
         )
 
         with context.begin_transaction():
