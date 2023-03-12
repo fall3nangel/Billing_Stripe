@@ -26,6 +26,7 @@ class InvoiceResponse(BaseModel):
 
 
 class PaymentToExternalRequest(BaseModel):
+    id: UUID
     amount: int
     currency: str
     user_id: str
