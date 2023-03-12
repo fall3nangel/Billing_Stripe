@@ -11,3 +11,19 @@ def query_get_movies(last_time, limit, offset) -> str:
         GROUP BY fw.id
         LIMIT {limit} OFFSET {offset}; 
     """
+
+
+def query_get_products(last_time, limit, offset) -> str:
+    return f"""
+        SELECT 
+            fw.id, 
+            fw.name, 
+            fw.price, 
+            fw.duration, 
+            fw.updated_at,  
+            fw.created_at
+        FROM content.product fw
+        WHERE fw.updated_at > '{last_time}'
+        GROUP BY fw.id
+        LIMIT {limit} OFFSET {offset}; 
+    """

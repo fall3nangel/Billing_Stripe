@@ -57,8 +57,15 @@ class Filmwork(UUIDMixin, TimeStampedMixin):
 
 
 class Product(UUIDMixin, TimeStampedMixin):
+    class DurationChoice(models.TextChoices):
+        month = "month", _("month")
+        day = "day", _("day")
+
     name = models.CharField(verbose_name=_("title"), max_length=255)
     price = models.DecimalField(verbose_name=_("price"), max_digits=10, decimal_places=2)
+    duration = models.CharField(
+        verbose_name=_("duration"), max_length=7, choices=DurationChoice.choices, default=DurationChoice.month
+    )
 
     class Meta:
         db_table = 'content"."product'

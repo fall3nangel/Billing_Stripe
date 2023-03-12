@@ -5,16 +5,16 @@ import psycopg2
 from dotenv import load_dotenv
 from psycopg2.extras import DictCursor
 
-from convertors import movie_converter
+from convertors import movie_converter, product_converter
 
 # from backoff import backoff
 # from converters import converter_genres, converter, converter_persons
 from etl import PostgresExtractor, PostgresLoader
-from models.admin_panel import AdminPanelMovies
+from models.admin_panel import AdminPanelMovies, AdminPanelProduct
 from logger import logger
 
 # from models import FetchedGenres, FetchedFilmWorks, FetchedPersons
-from query_executors.movies import query_get_movies
+from query_executors.movies import query_get_movies, query_get_products
 from config import settings
 from storage import JsonFileStorage, State
 
@@ -23,8 +23,8 @@ BASE_DIR = Path(__file__).resolve().parent
 load_dotenv()
 
 step_extractors = [
-    # ("filmworks", FetchedFilmWorks, query_get_movies, converter),
-    ("movie", AdminPanelMovies, query_get_movies, movie_converter),
+    # ("movie", AdminPanelMovies, query_get_movies, movie_converter),
+    ("product", AdminPanelProduct, query_get_products, product_converter),
 ]
 
 
