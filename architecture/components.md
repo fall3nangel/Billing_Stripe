@@ -87,7 +87,7 @@ flowchart TB
      
     subgraph "Сервис оплаты"
         PayAPI["PayAPI
-            [Fastapi]
+            [Flask]
             
             Позволяет осуществлять оплату,
             выполнять отмену оплаты"]
