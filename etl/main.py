@@ -50,7 +50,7 @@ def postgres_to_elastic():
                 billing_format_data = converter_executor(data)
                 pg_loader.save_all_data(db=billing_bd_name, inserted_data=billing_format_data)
                 time.sleep(1)
-
+        pg_loader.commit_data()
         state.set_state("last_time", expose_last_time)
         logger.info("Сохранено состояние %s", expose_last_time)
 

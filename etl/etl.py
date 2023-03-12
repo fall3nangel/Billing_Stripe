@@ -58,6 +58,7 @@ class PostgresLoader:
         fields_name_list = [key for key in inserted_data[0].dict()]
         # Переформатирем список полей в строку в формат sql
         fields_name_str = ", ".join([key for key in fields_name_list])
+        fields_name_str_with_exclude = ", ".join([f"EXCLUDED.{key}" for key in fields_name_list])
         # Генерим строку по количеству элементов для вставки из %s для формата sql
         amount_values_str = ", ".join("%s" for _ in range(len(fields_name_list)))
         # Список из объектов данных
@@ -65,7 +66,9 @@ class PostgresLoader:
         logger.debug(inserted_data_list)
         try:
             self.cursor.executemany(
-                f"INSERT INTO {db}({fields_name_str}) VALUES({amount_values_str}) ON CONFLICT (id) DO NOTHING;",
+                f"""INSERT INTO {db}({fields_name_str}) VALUES({amount_values_str}) 
+                        ON CONFLICT (id) 
+                        DO UPDATE SET ({fields_name_str}) = ({fields_name_str_with_exclude});""",
                 inserted_data_list,
             )
 
