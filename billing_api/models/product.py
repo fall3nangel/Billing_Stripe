@@ -1,24 +1,42 @@
-import uuid
-import enum
-
 import datetime
+import enum
 import uuid
 
-from sqlalchemy import TIMESTAMP, Boolean, Column, ForeignKey, String, Table, Integer, Enum, DECIMAL
+from sqlalchemy import (
+    DECIMAL,
+    TIMESTAMP,
+    Boolean,
+    Column,
+    Enum,
+    ForeignKey,
+    ForeignKeyConstraint,
+    Integer,
+    String,
+    Table,
+)
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import foreign, relationship, remote
 
 from db.postgres import Base
 
+
 # PRODUCT_DURATION = "month", "day"
 class ProductDuration(enum.Enum):
-    month = 1,
+    month = (1,)
     day = 2
+
 
 product_movie = Table(
     "product_movie_link",
     Base.metadata,
-    Column("id", UUID(as_uuid=True), primary_key=True),
+    Column(
+        "id",
+        UUID(as_uuid=True),
+        primary_key=True,
+        default=uuid.uuid4,
+        unique=True,
+        nullable=False,
+    ),
     Column("product_id", ForeignKey("product.id"), primary_key=False),
     Column(
         "movie_id",
@@ -27,25 +45,39 @@ product_movie = Table(
     ),
 )
 
+
 class Movie(Base):
     __tablename__ = "movie"
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, unique=True, nullable=False)
+    id = Column(
+        UUID(as_uuid=True),
+        primary_key=True,
+        default=uuid.uuid4,
+        unique=True,
+        nullable=False,
+    )
     name = Column(String, nullable=False)
     description = Column(String, nullable=False)
 
 
 class Product(Base):
     __tablename__ = "product"
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, unique=True, nullable=False)
+    id = Column(
+        UUID(as_uuid=True),
+        primary_key=True,
+        default=uuid.uuid4,
+        unique=True,
+        nullable=False,
+    )
     name = Column(String, nullable=False)
     price = Column(DECIMAL(10, 2))
-    duration = Column("duration", Enum(ProductDuration, name="duration_enum", create_type=False))
+    duration = Column(
+        "duration", Enum(ProductDuration, name="duration_enum", create_type=False)
+    )
     movies = relationship(
-        "Product",
+        "Movie",
         secondary=product_movie,
         primaryjoin=id == product_movie.c.product_id,
         secondaryjoin=Movie.id == product_movie.c.movie_id,
-        backref="product",
-        cascade="all,delete"
+        backref="products",
+        cascade="all,delete",
     )
-

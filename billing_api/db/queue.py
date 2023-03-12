@@ -2,12 +2,12 @@ import asyncio
 from functools import lru_cache
 
 import aio_pika
-from aio_pika.abc import AbstractRobustConnection
-from core.config import settings
-from fastapi import Depends
-from services.queue import QueueService
-
 import backoff
+from aio_pika.abc import AbstractRobustConnection
+from fastapi import Depends
+
+from core.config import settings
+from services.queue import QueueService
 
 rabbitmq: AbstractRobustConnection | None = None
 
@@ -26,6 +26,7 @@ async def get_rabbitmq():
 
 async def close_rabbitmq():
     await rabbitmq.close()
+
 
 @lru_cache()
 def get_queue_service(

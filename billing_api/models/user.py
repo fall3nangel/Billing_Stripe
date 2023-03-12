@@ -1,20 +1,25 @@
 import datetime
 import uuid
 
-from sqlalchemy import TIMESTAMP, Boolean, Column, ForeignKey, String, Table, Integer
+from sqlalchemy import TIMESTAMP, Boolean, Column, ForeignKey, Integer, String, Table
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 
 from db.postgres import Base
-
-from models.role import Role, user_role
 from models.product import Product
-
+from models.role import Role, user_role
 
 user_product = Table(
     "user_product_link",
     Base.metadata,
-    Column("id", UUID(as_uuid=True), primary_key=True),
+    Column(
+        "id",
+        UUID(as_uuid=True),
+        primary_key=True,
+        default=uuid.uuid4,
+        unique=True,
+        nullable=False,
+    ),
     Column("product_id", ForeignKey("product.id"), primary_key=False),
     Column(
         "user_id",
@@ -22,6 +27,7 @@ user_product = Table(
         primary_key=False,
     ),
 )
+
 
 class User(Base):
     __tablename__ = "user"
@@ -46,7 +52,7 @@ class User(Base):
         primaryjoin=id == user_role.c.user_id,
         secondaryjoin=Role.id == user_role.c.role_id,
         backref="users",
-        cascade="all,delete"
+        cascade="all,delete",
     )
     products = relationship(
         "Product",
@@ -54,10 +60,18 @@ class User(Base):
         primaryjoin=id == user_product.c.user_id,
         secondaryjoin=Product.id == user_product.c.product_id,
         backref="users",
-        cascade="all,delete"
+        cascade="all,delete",
     )
 
-    def __init__(self, login=None, password=None, email=None, fullname=None, phone=None, timezone=0):
+    def __init__(
+        self,
+        login=None,
+        password=None,
+        email=None,
+        fullname=None,
+        phone=None,
+        timezone=0,
+    ):
         self.login = login
         self.password = password
         self.email = email

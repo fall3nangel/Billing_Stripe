@@ -62,3 +62,5 @@ run_redis:
 		-f docker-compose.override.yml \
 		 up -d redis
 
+run_billingapi_local:
+	cd billing_api && python3 main.py
