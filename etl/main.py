@@ -6,8 +6,8 @@ import backoff
 import psycopg2
 from psycopg2.extras import DictCursor
 
-from convertors import movie_converter, product_converter, product_movie_pair_converter
 from config import settings
+from convertors import movie_converter, product_converter, product_movie_pair_converter
 from etl import PostgresExtractor, PostgresLoader
 from models.admin_panel import AdminPanelMovie, AdminPanelProduct, AdminPanelProductMoviePair
 from query_executors.movies import query_get_movies, query_get_products, query_get_product_movie_pairs
