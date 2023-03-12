@@ -1,4 +1,5 @@
 import json
+import logging
 from abc import abstractmethod
 from datetime import datetime, date
 from pathlib import Path
@@ -74,4 +75,5 @@ class State:
         if key not in state:
             return None
         result = state[key]
+        logging.debug("Storage key - %s: %s", key, result)
         return result

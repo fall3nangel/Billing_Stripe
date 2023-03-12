@@ -5,7 +5,7 @@ import psycopg2
 from psycopg2.extensions import connection as pg_connection
 from pydantic import ValidationError
 
-from core.config import settings
+from config import settings
 
 
 class PostgresExtractor:
@@ -28,6 +28,7 @@ class PostgresExtractor:
         """
         self.cursor.execute("select now();")
         data = self.cursor.fetchall().pop()
+        logging.debug("Expose last time: %s", data[0])
         return data[0]
 
     def get_updated(self, query_executor, validator):
@@ -72,7 +73,7 @@ class PostgresLoader:
             )
 
         except (Exception, psycopg2.DatabaseError) as error:
-            logging.error(error)
+            logging.exception(error)
             raise error
 
     def commit_data(self):
