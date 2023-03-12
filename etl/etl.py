@@ -75,6 +75,7 @@ class PostgresLoader:
         except (Exception, psycopg2.DatabaseError) as error:
             logging.exception(error)
             raise error
+        logging.info(f"Обработано '{len(inserted_data_list)}' записей таблицы '{db}'")
 
     def commit_data(self):
         self.connect.commit()
