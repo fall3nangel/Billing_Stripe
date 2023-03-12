@@ -6,9 +6,15 @@
 %%}%%
 flowchart TB
     
+    
     Admin["Администратор\n[WEB Browser]"] 
         
     Client["Пользователь\n[WEB Browser]"]
+    
+    Client--"Оформить подписку"-->BillingAPI
+    Client--"Отменить платеж"-->BillingAPI
+    Client--"Запросить выписку"-->BillingAPI
+    Client--"Авторизоваться"-->BillingAPI
 
     subgraph "ETL"
     
@@ -17,7 +23,7 @@ flowchart TB
         в бд сервиса пользователей
     "]
     
-    end    
+    end
         
     subgraph "Сервис формирования продуктов"
         
@@ -40,42 +46,48 @@ flowchart TB
             [Fastapi]
             Хранит информацию о счетах,
             Подтверждает оплату,
-            Авторизует доступ к продуктам
+            Авторизует доступ к продуктам,
+            Позволяет добавлять/удалять подписки на продукты,
+            Выдает токены пользователей
             "]
                     
-        Queue2["Queue
-            [RabbitMQ]
-            
-            "]
-            
         BillingDB["BillingDB
             [Postgres]
             
             Хранение счетов,
-            Хранение оплат"]
+            Хранение оплат,
+            Хранение подписок на продукты"]
             
         BillingCache["In-Memory Cache
             [Redis]
             
             Кэширует ответы на запросы
-            на доступ к продуктам"]
+            на доступ к продуктам,
+            Кэширует выдачу токенов"]
             
-        BillingQueue["Consumer
+        Scheduler["Scheduler
+            []
+            
+            Запуск периодической процедуры
+            выставления счетов по подписке"]
+        
+        Queue["Queue
             [RabbitMQ]
             
-            Получение событий об оплатах"]
+            Передача событий
+            для других систем"]
         
-        BillingAPI--"Передача изменений о счетах в другие системы"-->Queue2
         BillingAPI<-->BillingDB
         BillingAPI<-->BillingCache
-        BillingQueue--"Создание/изменение платежа"-->BillingAPI
-    
+        BillingDB<-->Scheduler
+        BillingAPI-->Queue
+
     end
      
      
     subgraph "Сервис оплаты"
         PayAPI["PayAPI
-            [Fastapi]
+            [Flask]
             
             Позволяет осуществлять оплату,
             выполнять отмену оплаты"]
@@ -85,70 +97,23 @@ flowchart TB
             
             Осуществляет обращение
             к внешним платежным сервисам"]
-        
-        Queue["Queue
-            [RabbitMQ]
             
-            Передача событий об оплатах
-            для других систем"]
-            
-        PayAPI--"платеж совершен"-->Queue
-        PayAPI--"платеж отменен"-->Queue
+        PayAPI--"Информация об оплате"-->BillingAPI
         PayAPI--"выполнить оплату"-->PayService
         PayAPI--"отменить оплату"-->PayService
         
     end
     
     
-    subgraph "Пользовательский сервис"
-        UserAPI["UserAPI
-            [Fastapi]
-            Позволяет добавлять/удалять подписки на продукты,
-            Авторизирует пользователей"]
-
-        
-        UserDB["UserDB
-            [Postgres]
-            
-            Хранение профиля пользователя,
-            Хранение подписок на продукты"]
-            
-        Scheduler["Scheduler
-            []
-            
-            Запуск периодической процедуры
-            выставления счетов по подписке"]
-        
-        Cache["In-Memory Cache
-            [Redis]
-            
-            Кэширует выдачу токенов"]
-
-        Cache<-->UserAPI
-        UserDB<-->Scheduler
-        UserAPI<-->UserDB
-
-        
-
-
-    end
-
-    
-    
-    Client--"купить подписку"-->UserAPI
-    Client--"отменить платеж"-->BillingAPI
-    Client--"создать рекуррентный платеж"-->UserAPI
-    Client--"запросить выписку"-->BillingAPI
 
     Admin--"Добавление фильмов"-->AdminPanel
     Admin--"Создание продуктов"-->AdminPanel
     Admin--"Просмотр счетов и оплат"-->BillingAPI
         
-    BillingAPI--"создать платеж"-->PayAPI
-    BillingAPI--"отменить платеж"-->PayAPI
+    BillingAPI--"Передача информации о счетах"-->PayAPI
         
     MovieDB-->Admin_panel_TO_UserService
-    Admin_panel_TO_UserService-->UserDB
+    Admin_panel_TO_UserService-->BillingDB
     
     Scheduler--"Выставление периодических счетов на оплату"-->BillingAPI
     
@@ -186,4 +151,6 @@ flowchart TB
     classDef service fill:#85bbf0, stroke:#5d82a8, color:#000000
     classDef database fill:#ffff00, stroke:#5d82a8, color:#000000
     classDef etl fill:#ff7777, stroke:#5d82a8, color:#000000
+    
 ```
+
