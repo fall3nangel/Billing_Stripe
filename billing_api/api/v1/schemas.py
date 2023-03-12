@@ -33,7 +33,7 @@ class PaymentToExternalRequest(BaseModel):
     email: str
     product_name: str
 
-class DelPaymentToExternalRequest(BaseModel):
+class RefundPaymentToExternalRequest(BaseModel):
     id: UUID
 
 

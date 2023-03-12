@@ -21,7 +21,7 @@ from .schemas import (
     ProductRequest,
     ProductResponse,
     PaymentToExternalRequest,
-    DelPaymentToExternalRequest
+    RefundPaymentToExternalRequest
 )
 
 from core.config import settings
@@ -166,7 +166,7 @@ async def cancel_payment(
     # data.id = "3fa85f64-5717-4562-b3fc-2c963f66afa6"
 
     # удаление платежа
-    pay_req = DelPaymentToExternalRequest(id=data.id)
+    pay_req = RefundPaymentToExternalRequest(id=data.id)
     status = await task(
         settings.users_app.cancel_pay_url,
         pay_req.__dict__,
