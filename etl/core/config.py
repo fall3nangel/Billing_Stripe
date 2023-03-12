@@ -3,7 +3,7 @@ import logging
 from logging import config as logging_config
 from pathlib import Path
 
-from pydantic import BaseModel, BaseSettings, Field
+from pydantic import BaseSettings, Field
 
 from core.logger import LOGGING
 

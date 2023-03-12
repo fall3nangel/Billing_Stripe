@@ -1,4 +1,5 @@
-from logger import logger
+import logging
+
 from models.admin_panel import AdminPanelMovie, AdminPanelProduct, AdminPanelProductMoviePair
 from models.billing import BillingMovie, BillingProduct, BillingProductMoviePair
 
@@ -19,9 +20,9 @@ def movie_converter(movies: list[AdminPanelMovie]) -> list[BillingMovie]:
             for movie in movies
         ]
     except Exception as error:
-        logger.exception("Ошибка валидации данных\n%s", error)
+        logging.exception("Ошибка валидации данных\n%s", error)
         raise error
-    logger.debug(f"Сконвертировано записей - %s", {len(converted_data)})
+    logging.debug(f"Сконвертировано записей - %s", {len(converted_data)})
     return converted_data
 
 
@@ -42,9 +43,9 @@ def product_converter(products: list[AdminPanelProduct]) -> list[BillingProduct]
             for product in products
         ]
     except Exception as error:
-        logger.exception("Ошибка валидации данных\n%s", error)
+        logging.exception("Ошибка валидации данных\n%s", error)
         raise error
-    logger.debug(f"Сконвертировано записей - %s", {len(converted_data)})
+    logging.debug(f"Сконвертировано записей - %s", {len(converted_data)})
     return converted_data
 
 
@@ -66,7 +67,7 @@ def product_movie_pair_converter(
             for product_movie_pair in product_movie_pairs
         ]
     except Exception as error:
-        logger.exception("Ошибка валидации данных\n%s", error)
+        logging.exception("Ошибка валидации данных\n%s", error)
         raise error
-    logger.debug(f"Сконвертировано записей - %s", {len(converted_data)})
+    logging.debug(f"Сконвертировано записей - %s", {len(converted_data)})
     return converted_data

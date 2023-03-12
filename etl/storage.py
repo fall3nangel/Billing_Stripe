@@ -1,9 +1,8 @@
+import json
 from abc import abstractmethod
 from datetime import datetime, date
 from pathlib import Path
 from typing import Any, Optional
-import json
-from logger import logger
 
 BASE_DIR = Path(__file__).resolve().parent
 

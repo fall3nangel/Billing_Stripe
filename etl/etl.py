@@ -1,11 +1,11 @@
 import datetime
+import logging
 
 import psycopg2
 from psycopg2.extensions import connection as pg_connection
 from pydantic import ValidationError
 
-from config import settings
-from logger import logger
+from core.config import settings
 
 
 class PostgresExtractor:
@@ -34,16 +34,15 @@ class PostgresExtractor:
         offset = 0
         while True:
             query = query_executor(last_time=self.last_time, limit=self.limit, offset=offset)
-            logger.debug(query)
             self.cursor.execute(query)
             try:
                 models_list = [validator(**dict(row)) for row in self.cursor.fetchall()]
             except ValidationError as error:
-                logger.exception("Ошибка валидации данных postgress \n%s", error)
+                logging.exception("Ошибка валидации данных postgress \n%s", error)
                 raise error
             if not models_list:
                 break
-            logger.debug(f"Получено записей - %s", {len(models_list)})
+            logging.debug(f"Получено записей - %s", {len(models_list)})
             yield models_list
             offset = offset + self.limit
 
@@ -63,7 +62,7 @@ class PostgresLoader:
         amount_values_str = ", ".join("%s" for _ in range(len(fields_name_list)))
         # Список из объектов данных
         inserted_data_list = [tuple(values_row.dict().values()) for values_row in inserted_data]
-        logger.debug(inserted_data_list)
+        logging.debug(inserted_data_list)
         try:
             self.cursor.executemany(
                 f"""INSERT INTO {db}({fields_name_str}) VALUES({amount_values_str}) 
@@ -73,7 +72,7 @@ class PostgresLoader:
             )
 
         except (Exception, psycopg2.DatabaseError) as error:
-            logger.error(error)
+            logging.error(error)
             raise error
 
     def commit_data(self):
