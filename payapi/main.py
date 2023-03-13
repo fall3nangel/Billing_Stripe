@@ -1,15 +1,29 @@
-import stripe
 import json
-from flask import Flask, redirect, jsonify, request
+import os
+import stripe
+from dotenv import load_dotenv
 from flasgger import Swagger
+from flask import Flask, jsonify, request
+import requests
+import backoff
+
+load_dotenv()
+stripe.api_key = os.environ.get("STRIPE_API_KEY")
+stripe_webhook_secret = os.environ.get("STRIPE_WEBHOOK_SECRET")
+stripe.max_network_retries = int(os.environ.get("STRIPE_MAX_NET_RETRIES"))
 
 app = Flask(__name__)
 swagger = Swagger(app)
-stripe.api_key = "sk_test_51MhJkeDkPCmMzRIB9LWoOqNgf7VM2wy74PPWIsqCC0SeSornS8U8hlur6EVLeK0vhl4TAjBW67CF7fKJygrmq4n200xJHXnvLR"
-endpoint_secret = (
-    "whsec_7eabaf3f8f360a41e2ddaac023b452432e20f3934b8d86fe101b819c84597b74"
-)
-stripe.max_network_retries = 10
+
+
+@app.route("/success")
+def success():
+    return "Success"
+
+
+@app.route("/cancelled")
+def cancelled():
+    return "Cancelled"
 
 
 @app.route("/create-checkout-session", methods=["POST"])
@@ -59,23 +73,29 @@ def create_checkout_session():
     """
     payment_method_id = None
     request_data = request.get_json()
-    user_id = request_data['user_id']
-    email=request_data['email']
-    customer_search = stripe.Customer.search(query=f"metadata[\"int_customer_id\"]:\"{user_id}\"")
+    user_id = request_data["user_id"]
+    email = request_data["email"]
+    customer_search = stripe.Customer.search(
+        query=f'metadata["int_customer_id"]:"{user_id}"'
+    )
     if customer_search.data:
-        customer_id = customer_search.data[0]['id']
+        customer_id = customer_search.data[0]["id"]
         payment_methods = stripe.PaymentMethod.list(customer=customer_id)
         if payment_methods.data:
-            payment_method_id = payment_methods.data[0]['id']
-    else:    
-        new_customer = stripe.Customer.create(name=request_data['user_name'], email=email, metadata={"int_customer_id": f"{user_id}"})
-        customer_id = new_customer['id']
+            payment_method_id = payment_methods.data[0]["id"]
+    else:
+        new_customer = stripe.Customer.create(
+            name=request_data["user_name"],
+            email=email,
+            metadata={"int_customer_id": f"{user_id}"},
+        )
+        customer_id = new_customer["id"]
     if payment_method_id:
         try:
             stripe.PaymentIntent.create(
-                description=request_data['product_name'],
-                amount=request_data['amount'],
-                currency=request_data['currency'],
+                description=request_data["product_name"],
+                amount=request_data["amount"],
+                currency=request_data["currency"],
                 customer=customer_id,
                 payment_method=payment_method_id,
                 off_session=True,
@@ -86,9 +106,9 @@ def create_checkout_session():
             err = e.error
             # Error code will be authentication_required if authentication is needed
             print("Code is: %s" % err.code)
-            payment_intent_id = err.payment_intent['id']
+            payment_intent_id = err.payment_intent["id"]
             payment_intent = stripe.PaymentIntent.retrieve(payment_intent_id)
-        return jsonify(success=True)
+        return jsonify(success=True, url=None)
     else:
         session = stripe.checkout.Session.create(
             line_items=[
@@ -106,17 +126,36 @@ def create_checkout_session():
             customer=customer_id,
             metadata={"order_id": "6735"},
             mode="payment",
-            success_url="http://localhost:4242/success.html",
-            cancel_url="http://localhost:4242/cancel.html",
-            payment_intent_data={"setup_future_usage": "off_session", "metadata": {"order_id": f"{request_data['order_id']}"}},
+            success_url="http://localhost:4242/success",
+            cancel_url="http://localhost:4242/cancel",
+            payment_intent_data={
+                "setup_future_usage": "off_session",
+                "metadata": {"order_id": f"{request_data['order_id']}"},
+            },
         )
-        return redirect(session.url, code=303)
+        return jsonify(success=True, url=session.url)
 
 
 @app.route("/refund", methods=["POST"])
 def refund():
+    """Refund
+    ---
+    parameters:
+          - in: body
+            name: body
+            schema:
+              required:
+                - payment_intent
+              properties:
+                payment_intent:
+                  type: string
+                  description: payment intent ID
+    responses:
+      200:
+        description: Order refunded
+    """
     request_data = request.get_json()
-    payment_intent = request_data['payment_intent']
+    payment_intent = request_data["payment_intent"]
     if payment_intent:
         stripe.Refund.create(payment_intent=payment_intent)
         return jsonify(success=True)
@@ -132,10 +171,12 @@ def webhook():
     except ValueError as e:
         print("⚠️  Webhook error while parsing basic request." + str(e))
         return jsonify(success=False)
-    if endpoint_secret:
+    if stripe_webhook_secret:
         sig_header = request.headers.get("stripe-signature")
         try:
-            event = stripe.Webhook.construct_event(payload, sig_header, endpoint_secret)
+            event = stripe.Webhook.construct_event(
+                payload, sig_header, stripe_webhook_secret
+            )
         except stripe.error.SignatureVerificationError as e:
             print("⚠️  Webhook signature verification failed." + str(e))
             return jsonify(success=False)
@@ -143,13 +184,14 @@ def webhook():
     if event and event["type"] == "payment_intent.succeeded":
         payment_intent = event["data"]["object"]
         order_id = payment_intent["metadata"]["order_id"]
-        print(order_id)
-
-
-#    charge.refund.updated
-
+        send_successful_payment(order_id=order_id)
     return jsonify(success=True)
 
+
+@backoff.on_exception(backoff.expo, requests.exceptions.RequestException)
+def send_successful_payment(self, order_id):
+    dictToSend = {'order_id': f"{order_id}"}
+    res = requests.post('http://localhost:5000/add-payment', json=dictToSend)
 
 if __name__ == "__main__":
     app.run(port=4242)
