@@ -70,7 +70,7 @@ async def add_product(
     pay_req = PaymentToExternalRequest(amount=getattr(product, "price"), currency="RUB",
                                    user_id=user_id, user_name=getattr(user, "fullname"),
                                    product_name=getattr(product, "name"), email=getattr(user, "email"))
-    # todo url to payAPI from env
+
     status = await task(
         settings.users_app.create_pay_url,
         pay_req.__dict__,
