@@ -1,3 +1,7 @@
+import logging
+import time
+
+import backoff
 import httpx
 
 
@@ -34,6 +38,24 @@ class Billing:
         if not self.user_access_token:
             raise Exception("Токен пользователя не заполнен")
         return self.user_access_token
+
+    @backoff.on_exception(backoff.expo, httpx.ReadError)
+    def check_connection(self):
+        result = httpx.post(
+            f"{self.url}/content/login",
+            json=dict(
+                login="unexisted_user",
+                fullname="fullname",
+                password="password",
+                email="mail@example.com",
+                phone="+77777777777",
+            ),
+            headers=self.headers,
+        )
+        if result.status_code == httpx.codes.BAD_REQUEST:
+            return True
+        return False
+
 
     def check_rights(self, movie_id: str):
         self.headers["Authorization"] = self.user_access_token
