@@ -8,12 +8,17 @@ install_requirements:
 run_postgres:
 	docker compose \
 		-f docker-compose.yml \
+		-f docker-compose_pg_develop.yml \
 		-f docker-compose.override.yml \
 		up -d postgres pgadmin
 
 drop_postgres:
 	docker stop postgres_container && docker rm --force postgres_container
 	docker volume rm graduate_project_postgres
+
+drop_postgres_test:
+	docker stop postgres_container_test && docker rm --force postgres_container_test
+	docker volume rm graduate_project_postgres_test
 
 run_admin_panel_local:
 	cd admin_panel && python3 manage.py migrate
@@ -25,6 +30,7 @@ run_admin_panel_service:
 	cd admin_panel && python3 manage.py collectstatic --noinput
 	docker compose \
  		-f docker-compose.yml \
+		-f docker-compose_pg_develop.yml \
 		-f docker-compose.override.yml \
  		up --build admin
 
@@ -32,18 +38,21 @@ run_billing_service:
 	cd admin_panel && python3 manage.py collectstatic --noinput
 	docker compose \
  		-f docker-compose.yml \
+		-f docker-compose_pg_develop.yml \
 		-f docker-compose.override.yml \
  		up --build billing
 
 run_etl_service:
 	docker compose \
  		-f docker-compose.yml \
+		-f docker-compose_pg_develop.yml \
 		-f docker-compose.override.yml \
  		up --build etl
 
 down:
 	docker compose \
 	-f docker-compose.yml \
+	-f docker-compose_pg_develop.yml \
 	-f docker-compose.override.yml \
 	down --remove-orphans
 
@@ -64,3 +73,10 @@ run_redis:
 
 run_billingapi_local:
 	cd billing_api && python3 main.py
+
+run_test_environment:
+	docker compose \
+ 		-f docker-compose.yml \
+		-f docker-compose_pg_tests.yml \
+		-f docker-compose.override.yml \
+ 		up --build billing
