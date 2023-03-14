@@ -214,3 +214,23 @@ class DBService:
         )
 
         return res.scalars().first()
+
+    async def get_user_by_login(self, login: str):
+        from models.user import User
+
+        res = await self.db.execute(select(User).filter_by(login=login))
+        return res.scalars().first()
+
+    async def add_user(self, login: str, password: str, email: str, fullname: str, phone: str):
+        from models.user import User
+
+        user = User(
+            login=login,
+            password=password,
+            email=email,
+            fullname=fullname,
+            phone=phone,
+            timezone=0,
+        )
+        self.db.add(user)
+        await self.db.commit()
