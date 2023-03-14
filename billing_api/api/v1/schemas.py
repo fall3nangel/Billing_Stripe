@@ -4,6 +4,7 @@ from uuid import UUID
 from pydantic import BaseModel
 
 from models.payment import Currency
+from models.product import ProductDuration
 
 
 class ProductRequest(BaseModel):
@@ -15,10 +16,8 @@ class ProductRequest(BaseModel):
 class ProductResponse(BaseModel):
     id: UUID
     name: str
-    fd: datetime
-    td: datetime | None = None
-    status: str
-
+    price: int
+    duration: ProductDuration
 
 class InvoiceResponse(BaseModel):
     id: str

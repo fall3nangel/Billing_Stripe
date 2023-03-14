@@ -22,6 +22,12 @@ class DBService:
         res = await self.db.execute(select(Product).filter_by(id=id))
         return res.scalars().first()
 
+    async def get_all_products(self):
+        from models.product import Product
+
+        res = await self.db.execute(select(Product))
+        return res.scalars().all()
+
     async def get_last_invoice_by_user(self, user_id: str, product_id: str):
         from models.invoice import Invoice
 

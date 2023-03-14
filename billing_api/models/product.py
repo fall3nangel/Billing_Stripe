@@ -22,7 +22,7 @@ from db.postgres import Base
 
 # PRODUCT_DURATION = "month", "day"
 class ProductDuration(enum.Enum):
-    month = (1,)
+    month = 1
     day = 2
 
 
