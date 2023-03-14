@@ -1,0 +1,35 @@
+name: CI notify
+
+on:
+  workflow_run:
+    workflows: ["Python application"]
+    types: [completed]
+
+jobs:
+
+  on-failure:
+
+    permissions: write-all
+
+    runs-on: ubuntu-latest
+
+    if: ${{ github.event.workflow_run.conclusion == 'failure' }}
+
+    steps:
+
+    - run: |
+        echo 'JSON_RESPONSE<<EOF' >> $GITHUB_ENV
+        curl --url ${{github.event.workflow_run.url}} --header 'authorization: Bearer ${{ secrets.GITHUB_TOKEN }}' --header 'content-type: application/json' >> $GITHUB_ENV
+        echo 'EOF' >> $GITHUB_ENV
+        cat $GITHUB_ENV
+
+    - name: Send telegram message
+      uses: appleboy/telegram-action@master
+      with:
+        to: ${{ secrets.TELEGRAM_TO }}
+        token: ${{ secrets.TELEGRAM_TOKEN }}
+        message: |
+          Workflow failed ${{ fromJSON(env.JSON_RESPONSE).display_title }} from ${{ fromJSON(env.JSON_RESPONSE).head_commit.author.name }}
+          ${{ fromJSON(env.JSON_RESPONSE).html_url }}
+
+
