@@ -34,10 +34,10 @@ async def get_access_token(user_id: str | None = None) -> str:
     return token
 
 
-@router.post(
+@router.get(
     "/check-rights/{movie_id}",
     responses={
-        int(HTTPStatus.CREATED): {
+        int(HTTPStatus.OK): {
             "model": bool,
             "description": "Successful Response",
         },

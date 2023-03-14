@@ -34,3 +34,36 @@ class Billing:
         if not self.user_access_token:
             raise Exception("Токен пользователя не заполнен")
         return self.user_access_token
+
+    def check_rights(self, movie_id: str):
+        self.headers["Authorization"] = self.user_access_token
+        result = httpx.get(
+            f"{self.url}/content/check-rights/{movie_id}",
+            headers=self.headers,
+        )
+        if result.status_code != httpx.codes.OK:
+            self.last_error = f"Выполнение запроса привело к ошибке {result.status_code}"
+            return False
+        data = result.json()
+        if not data:
+            self.last_error = "Нет прав на просмотр"
+            return False
+        return True
+
+    def add_product_to_user(self, product_id: str):
+        self.headers["Authorization"] = self.user_access_token
+        result = httpx.post(
+            f"{self.url}/billing/add-product/",
+            json=dict(
+                id=product_id,
+            ),
+            headers=self.headers,
+        )
+        if result.status_code != httpx.codes.CREATED:
+            self.last_error = f"Выполнение запроса привело к ошибке {result.status_code}"
+            return False
+        data = result.json()
+        if 'id' not in data and 'name' in data:
+            self.last_error = "Некорректный ответ"
+            return False
+        return True
