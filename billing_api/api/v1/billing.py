@@ -235,17 +235,15 @@ async def get_payments(
     summary="Получение списка подписок",
     description="Получение списка подписок",
     tags=["billing"],
-    # dependencies=[Depends(auth)],
+    dependencies=[Depends(auth)],
 )
 async def get_products(
     request: Request,
     db: DBService = Depends(get_db_service),
 ) -> list[ProductResponse]:
-    # user_id = request.state.user_id
+    user_id = request.state.user_id
     #user_id = "3fa85f64-5717-4562-b3fc-1c963f66afa6"
     products = await db.get_all_products()
-
-    print(products[0])
 
     return [
         ProductResponse(
