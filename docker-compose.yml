@@ -1,9 +1,3 @@
-x-postgres: &postgres-environments
-  POSTGRES__USER: ${POSTGRES__USER}
-  POSTGRES__PASSWORD: ${POSTGRES__PASSWORD}
-  POSTGRES__DB: ${POSTGRES__DB}
-  POSTGRES__HOST: "postgres_container"
-
 x-debug: &debug-environments
   DEBUG: True
 
@@ -21,7 +15,6 @@ services:
       - "8000"
     container_name: django
     environment:
-      <<: *postgres-environments
       <<: *debug-environments
       SECRET_KEY: ${SECRET_KEY}
     networks:
@@ -38,30 +31,24 @@ services:
     networks:
       - movies
     environment:
-      <<: *postgres-environments
       <<: *debug-environments
       <<: *rabbit-environments
+      PAY_URL: pay-api
     depends_on:
       - postgres
       - rabbitmq
       - redis
 
-  postgres:
-    container_name: postgres_container
-    env_file:
-      - .env
-    image: postgres:13
-    environment:
-      POSTGRES_USER: ${POSTGRES__USER}
-      POSTGRES_PASSWORD: ${POSTGRES__PASSWORD}
-      POSTGRES_DB: ${POSTGRES__DB}
-      PGDATA: /data/postgres
-    volumes:
-       - postgres:/data/postgres
-       - ./sql/create_tables.sql:/docker-entrypoint-initdb.d/create_tables.sql
+  pay-api:
+    container_name: pay-api
+    image: payapi
     networks:
       - movies
-    restart: unless-stopped
+    environment:
+      STRIPE_API_KEY: ${STRIPE_API_KEY}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET}
+      STRIPE_MAX_NET_RETRIES: ${STRIPE_MAX_NET_RETRIES}
+
 
   etl:
     container_name: etl
@@ -70,8 +57,6 @@ services:
     build: ./etl/
     networks:
       - movies
-    environment:
-      <<: *postgres-environments
     depends_on:
       - postgres
 
@@ -93,11 +78,6 @@ services:
       - ALLOW_EMPTY_PASSWORD=yes
     networks:
       - movies
-
-volumes:
-    postgres:
-      name: graduate_project_postgres
-    pgadmin:
 
 networks:
   movies:

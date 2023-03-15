@@ -37,7 +37,7 @@ async def get_access_token(user_id: str | None = None) -> str:
 @router.post(
     "/check-rights/{movie_id}",
     responses={
-        int(HTTPStatus.CREATED): {
+        int(HTTPStatus.OK): {
             "model": dict,
             "description": "Successful Response",
         },
