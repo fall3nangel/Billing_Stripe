@@ -27,16 +27,17 @@ BASE_DIR = Path(__file__).parent.resolve()
 #     transaction.rollback()
 #     connection.close()
 
-@backoff.on_exception(backoff.expo, OperationalError)
-def engine_connect():
-    engine.connect()
+
+@pytest.fixture(scope="session")
+def billing_client():
+    client = Billing(url="http://127.0.0.1:8000")
+    assert client.create_test_user(), client.last_error
+    return client
 
 
 @pytest.fixture(scope="session")
 def db_session(billing_client) -> Generator[SessionTesting, Any, None]:
-
     db = SessionTesting()
-    engine_connect()
     # Base.metadata.create_all(bind=engine)
     yield db
     # for tbl in reversed(Base.metadata.sorted_tables):
@@ -44,7 +45,8 @@ def db_session(billing_client) -> Generator[SessionTesting, Any, None]:
     #     engine.execute(tbl.delete())
     # engine.execute(text("""TRUNCATE TABLE users."user" CASCADE;"""))
 
-@pytest.fixture(scope="function")
+
+@pytest.fixture(scope="session")
 def initial_data(db_session):
     movies = [
         Movie(name="Смешарики в кино", description=""),
@@ -55,10 +57,3 @@ def initial_data(db_session):
     db_session.flush()
     db_session.commit()
     return product, movies
-
-
-@pytest.fixture(scope="session")
-def billing_client():
-    client = Billing(url="http://127.0.0.1:8000")
-    client.check_connection()
-    return client
