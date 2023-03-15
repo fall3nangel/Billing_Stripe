@@ -28,7 +28,9 @@ class JWTBearer(HTTPBearer):
             request.state.user_id = payload["user_id"]
             return ORJSONResponse(credentials.credentials)
         else:
-            raise HTTPException(status_code=HTTPStatus.FORBIDDEN, detail="Invalid authorization code.")
+            raise HTTPException(
+                status_code=HTTPStatus.FORBIDDEN, detail="Invalid authorization code."
+            )
 
     def verify_jwt(self, token: str) -> Optional[Dict[Any, Any]]:
         try:
