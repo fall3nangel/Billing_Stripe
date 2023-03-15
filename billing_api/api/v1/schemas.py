@@ -9,8 +9,6 @@ from models.product import ProductDuration
 
 class ProductRequest(BaseModel):
     id: UUID
-    fd: datetime
-    td: datetime | None = None
 
 
 class ProductResponse(BaseModel):

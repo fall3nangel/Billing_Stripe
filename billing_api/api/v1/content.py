@@ -45,13 +45,13 @@ async def get_access_token(user_id: str | None = None) -> str:
     summary="Проверка прав на просмотр фильма",
     description="Проверка прав на просмотр фильма",
     tags=["content"],
-    # dependencies=[Depends(auth)],
+    dependencies=[Depends(auth)],
 )
 async def check_rights(
     movie_id: str, request: Request, db: DBService = Depends(get_db_service)
 ) -> dict:
-    # user_id = request.state.user_id
-    user_id = "3fa85f64-5717-4562-b3fc-1c963f66afa6"
+    user_id = request.state.user_id
+    # user_id = "3fa85f64-5717-4562-b3fc-1c963f66afa6"
     product = await db.get_product_by_movie(str(movie_id))
     if not product:
         raise HTTPException(HTTPStatus.NOT_FOUND, detail="product not found")
