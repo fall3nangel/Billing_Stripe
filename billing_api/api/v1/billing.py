@@ -31,7 +31,8 @@ router = APIRouter()
 
 
 @router.post(
-    "/add-product",
+    "/add-product/{product_id}",
+    status_code=HTTPStatus.CREATED,
     responses={
         int(HTTPStatus.CREATED): {
             "model": ProductResponse,
@@ -45,7 +46,7 @@ router = APIRouter()
 )
 async def add_product(
     request: Request,
-    data: ProductRequest = Body(default=None),
+    product_id: str,
     db: DBService = Depends(get_db_service),
 ) -> ProductResponse:
     user_id = request.state.user_id
@@ -53,16 +54,16 @@ async def add_product(
     # data.id = "3fa85f64-5717-4562-b3fc-2c963f66afa6"
 
     # добавление подписки в профиль пользователя
-    await db.add_product_to_user(str(data.id), user_id)
+    await db.add_product_to_user(product_id, user_id)
 
     # выставление счета на оплату
-    await db.add_invoice_by_product(user_id, str(data.id))
+    await db.add_invoice_by_product(user_id, product_id)
 
     # получение подписки
-    product = await db.get_product(str(data.id))
+    product = await db.get_product(product_id)
 
     # получение счета на оплату
-    invoice = await db.get_last_invoice_by_user(user_id, str(data.id))
+    # invoice = await db.get_last_invoice_by_user(user_id, product_id)
 
     # получение профиля пользователя
     user = await db.get_user(user_id)
@@ -73,15 +74,14 @@ async def add_product(
                                    product_name=getattr(product, "name"), email=getattr(user, "email"))
 
     status = await task(
-        f"{settings.users_app.pay_url}/create",
+        f"{settings.users_app.pay_url}/create-checkout-session",
         pay_req.__dict__,
     )
     return ProductResponse(
         id=getattr(product, "id"),
         name=getattr(product, "name"),
-        fd=getattr(invoice, "start_date"),
-        td=getattr(invoice, "finish_date"),
-        status=status,
+        price=getattr(product, "price"),
+        duration=getattr(product, "duration"),
     )
 
 
