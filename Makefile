@@ -53,6 +53,13 @@ run_etl_service:
 		-f docker-compose.override.yml \
  		up --build etl
 
+run_pay-api_service:
+	docker compose \
+		-f docker-compose.yml \
+		-f docker-compose_pg_develop.yml \
+		-f docker-compose.override.yml \
+		 up --build pay-api
+
 down:
 	docker compose \
 	-f docker-compose.yml \
@@ -74,6 +81,7 @@ run_redis:
 		-f docker-compose.yml \
 		-f docker-compose.override.yml \
 		 up -d redis
+
 
 run_billingapi_local:
 	cd billing_api && python3 main.py
