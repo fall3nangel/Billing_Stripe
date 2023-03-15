@@ -101,4 +101,4 @@ stop_test_service:
  		stop billing postgres pay-api
 
 run_test_local: stop_test_service drop_postgres_test run_test_environment
-	cd integartion_test && pytest -s
+	cd integration_test && pytest -s

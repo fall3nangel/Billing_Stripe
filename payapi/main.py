@@ -12,7 +12,7 @@ from core.config import settings
 # logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S')
 stripe.api_key = settings.stripe_api_key
 stripe_webhook_secret = settings.stripe_webhook_secret
-stripe.max_network_retries = settings.stripe_max_net_retries
+stripe.max_network_retries = int(settings.stripe_max_net_retries)
 
 app = Flask(settings.project_name)
 swagger = Swagger(app)

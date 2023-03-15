@@ -1,0 +1,8 @@
+pytest
+httpx
+allure-pytest
+backoff
+psycopg2
+sqlalchemy
+pydantic
+python-dotenv
