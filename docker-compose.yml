@@ -38,23 +38,6 @@ services:
       - rabbitmq
       - redis
 
-  postgres:
-    container_name: postgres_container
-    env_file:
-      - .env
-    image: postgres:13
-    environment:
-      POSTGRES_USER: ${POSTGRES__USER}
-      POSTGRES_PASSWORD: ${POSTGRES__PASSWORD}
-      POSTGRES_DB: ${POSTGRES__DB}
-      PGDATA: /data/postgres
-    volumes:
-       - postgres:/data/postgres
-       - ./sql/create_tables.sql:/docker-entrypoint-initdb.d/create_tables.sql
-    networks:
-      - movies
-    restart: unless-stopped
-
   etl:
     container_name: etl
     restart: always

@@ -26,7 +26,6 @@ services:
       POSTGRES_DB: ${POSTGRES__DB}
       PGDATA: /data/postgres
     volumes:
-       - postgres:/data/postgres
        - ./sql/create_tables.sql:/docker-entrypoint-initdb.d/create_tables.sql
     networks:
       - movies
@@ -35,7 +34,3 @@ services:
   etl:
     environment:
       <<: *postgres-environments
-
-volumes:
-    postgres:
-      name: graduate_project_postgres_test

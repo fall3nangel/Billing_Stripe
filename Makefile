@@ -17,8 +17,12 @@ drop_postgres:
 	docker volume rm graduate_project_postgres
 
 drop_postgres_test:
-	docker stop postgres_container_test && docker rm --force postgres_container_test
-	docker volume rm graduate_project_postgres_test
+	docker compose \
+ 		-f docker-compose.yml \
+		-f docker-compose_pg_tests.yml \
+		-f docker-compose.override.yml \
+ 		rm --force
+
 
 run_admin_panel_local:
 	cd admin_panel && python3 manage.py migrate
@@ -81,12 +85,12 @@ run_test_environment:
 		-f docker-compose.override.yml \
  		up -d --build billing
 
-billing_stop_servie:
+stop_test_service:
 	docker compose \
  		-f docker-compose.yml \
 		-f docker-compose_pg_tests.yml \
 		-f docker-compose.override.yml \
- 		stop billing
+ 		stop billing postgres
 
-run_test_local: billing_stop_servie drop_postgres_test run_test_environment
+run_test_local: stop_test_service drop_postgres_test run_test_environment
 	cd integartion_test && pytest -s
