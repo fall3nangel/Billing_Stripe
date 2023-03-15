@@ -43,6 +43,7 @@ class Billing:
 
     def _send(self, query: str, await_result: httpx.codes, send_type: SendType, **kwargs):
         result = send_type(f"{self.url}{query}", headers=self.headers, **kwargs)
+        logging.debug("%s", result)
         if result.status_code != await_result:
             self.last_error = f"Выполнение запроса привело к неожидаемому статусу {result.status_code}"
             return True, ""
@@ -71,12 +72,9 @@ class Billing:
 
     def add_product_to_user(self, product_id: str):
         error, self.last_json = self._send(
-            query="/billing/add-product",
+            query=f"/billing/add-product/{product_id}",
             send_type=SendType.post,
             await_result=httpx.codes.CREATED,
-            json=dict(
-                id=product_id,
-            ),
         )
         if error:
             return False
