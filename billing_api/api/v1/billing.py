@@ -73,7 +73,7 @@ async def add_product(
                                    product_name=getattr(product, "name"), email=getattr(user, "email"))
 
     status = await task(
-        settings.users_app.create_pay_url,
+        f"{settings.users_app.pay_url}/create",
         pay_req.__dict__,
     )
     return ProductResponse(
@@ -169,7 +169,7 @@ async def cancel_payment(
     # удаление платежа
     pay_req = RefundPaymentToExternalRequest(id=data.id)
     status = await task(
-        settings.users_app.cancel_pay_url,
+        f"{settings.users_app.pay_url}/refund",
         pay_req.__dict__,
     )
 

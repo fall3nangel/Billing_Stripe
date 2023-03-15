@@ -13,8 +13,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent.parent
 class UsersApp(BaseModel):
     jwt_secret_key: str = Field("someword")
     algorithm: str = Field("HS256")
-    create_pay_url: str = Field("http://0.0.0.0:8000/api/v1/pay/create")
-    cancel_pay_url: str = Field("http://0.0.0.0:8000/api/v1/pay/refund")
+    pay_url: str = Field("http://0.0.0.0:8000/api/v1/pay/")
 
     psw_hash_iterations: int = Field(1000)
     salt_length: int = Field(20)
