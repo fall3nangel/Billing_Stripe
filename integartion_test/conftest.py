@@ -10,6 +10,7 @@ from sqlalchemy.exc import OperationalError
 from sqlalchemy.sql import text
 
 from clients.billing import Billing
+from clients.payapi import PayApi
 from models.product import Product, Movie
 from models.user import User
 from postgres import engine, SessionTesting, Base
@@ -32,6 +33,11 @@ BASE_DIR = Path(__file__).parent.resolve()
 def billing_client():
     client = Billing(url="http://127.0.0.1:8000")
     assert client.create_test_user(), client.last_error
+    return client
+
+@pytest.fixture(scope="session")
+def payapi_client():
+    client = PayApi(url="http://127.0.0.1:8002")
     return client
 
 

@@ -91,14 +91,14 @@ run_test_environment:
  		-f docker-compose.yml \
 		-f docker-compose_pg_tests.yml \
 		-f docker-compose.override.yml \
- 		up -d --build billing
+ 		up -d --build billing pay-api
 
 stop_test_service:
 	docker compose \
  		-f docker-compose.yml \
 		-f docker-compose_pg_tests.yml \
 		-f docker-compose.override.yml \
- 		stop billing postgres
+ 		stop billing postgres pay-api
 
 run_test_local: stop_test_service drop_postgres_test run_test_environment
 	cd integartion_test && pytest -s
