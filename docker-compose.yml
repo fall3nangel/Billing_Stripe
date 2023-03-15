@@ -33,10 +33,22 @@ services:
     environment:
       <<: *debug-environments
       <<: *rabbit-environments
+      PAY_URL: pay-api
     depends_on:
       - postgres
       - rabbitmq
       - redis
+
+  pay-api:
+    container_name: pay-api
+    image: payapi
+    networks:
+      - movies
+    environment:
+      STRIPE_API_KEY: ${STRIPE_API_KEY}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET}
+      STRIPE_MAX_NET_RETRIES: ${STRIPE_MAX_NET_RETRIES}
+
 
   etl:
     container_name: etl

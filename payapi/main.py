@@ -1,27 +1,28 @@
 import json
 import os
 import stripe
-from dotenv import load_dotenv
 from flasgger import Swagger
 from flask import Flask, jsonify, request
 import requests
 import backoff
 import logging
 
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S')
-load_dotenv()
-stripe.api_key = os.environ.get("STRIPE_API_KEY")
-stripe_webhook_secret = os.environ.get("STRIPE_WEBHOOK_SECRET")
-stripe.max_network_retries = int(os.environ.get("STRIPE_MAX_NET_RETRIES"))
+from core.config import settings
 
-app = Flask(__name__)
+# logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S')
+stripe.api_key = settings.stripe_api_key
+stripe_webhook_secret = settings.stripe_webhook_secret
+stripe.max_network_retries = settings.stripe_max_net_retries
+
+app = Flask(settings.project_name)
 swagger = Swagger(app)
 
 
 @backoff.on_exception(backoff.expo, requests.exceptions.RequestException)
 def send_successful_payment(self, order_id, payment_intent_id):
-    dictToSend = {'order_id': f"{order_id}", 'payment_intent_id': f"{payment_intent_id}"}
-    res = requests.post('http://localhost:5000/add-payment', json=dictToSend)
+    dictToSend = {"order_id": f"{order_id}", "payment_intent_id": f"{payment_intent_id}"}
+    res = requests.post("http://localhost:5000/add-payment", json=dictToSend)
+
 
 @app.route("/success")
 def success():
@@ -82,9 +83,7 @@ def create_checkout_session():
     request_data = request.get_json()
     user_id = request_data["user_id"]
     email = request_data["email"]
-    customer_search = stripe.Customer.search(
-        query=f'metadata["int_customer_id"]:"{user_id}"'
-    )
+    customer_search = stripe.Customer.search(query=f'metadata["int_customer_id"]:"{user_id}"')
     if customer_search.data:
         customer_id = customer_search.data[0]["id"]
         logging.info(f"create-checkout-session, Customer found - {customer_id}")
@@ -112,7 +111,7 @@ def create_checkout_session():
                 confirm=True,
                 metadata={"order_id": f"{request_data['order_id']}"},
             )
-        except stripe.error.CardError as e:# Error code will be authentication_required if authentication is needed
+        except stripe.error.CardError as e:  # Error code will be authentication_required if authentication is needed
             err = e.error
             logging.error(f"CardError, {err.code}, payment_intent {payment_intent['id']}")
         logging.info(f"create-checkout-session, Payment Intent created - {payment_intent['id']}")
@@ -183,9 +182,7 @@ def webhook():
     if stripe_webhook_secret:
         sig_header = request.headers.get("stripe-signature")
         try:
-            event = stripe.Webhook.construct_event(
-                payload, sig_header, stripe_webhook_secret
-            )
+            event = stripe.Webhook.construct_event(payload, sig_header, stripe_webhook_secret)
         except stripe.error.SignatureVerificationError as e:
             logging.error(f"⚠️  Webhook signature verification failed. {e}")
             return jsonify(success=False)
