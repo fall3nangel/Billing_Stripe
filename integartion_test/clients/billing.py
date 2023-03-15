@@ -1,30 +1,13 @@
-import json
 import logging
-from datetime import datetime, date
+from enum import Enum
 
 import backoff
 import httpx
-from sqlalchemy.dialects.postgresql import UUID
 
 
-class UUIDEncoder(json.JSONEncoder):
-    def default(self, obj):
-        if isinstance(obj, UUID):
-            # if the obj is uuid, we simply return the value of uuid
-            return obj.hex
-        return json.JSONEncoder.default(self, obj)
-
-
-def json_serial(obj):
-    """JSON serializer for objects not serializable by default json code"""
-    if isinstance(obj, (datetime, date)):
-        return obj.isoformat()
-
-    if isinstance(obj, UUID):
-        # if the obj is uuid, we simply return the value of uuid
-        return obj.hex
-
-    raise TypeError("Type %s not serializable" % type(obj))
+class SendType(Enum):
+    post = httpx.post
+    get = httpx.get
 
 
 class Billing:
@@ -58,16 +41,8 @@ class Billing:
         self.headers["Authorization"] = f"Bearer {data['access_token']}"
         return True
 
-    def _send_get(self, query: str, await_result: httpx.codes):
-        result = httpx.get(f"{self.url}{query}", headers=self.headers)
-        if result.status_code != await_result:
-            self.last_error = f"Выполнение запроса привело к неожидаемому статусу {result.status_code}"
-            return True, ""
-        logging.debug("%s", result.json())
-        return False, result.json()
-
-    def _send_post(self, query: str, await_result: httpx.codes, **kwargs):
-        result = httpx.post(f"{self.url}{query}", headers=self.headers, **kwargs)
+    def _send(self, query: str, await_result: httpx.codes, send_type: SendType, **kwargs):
+        result = send_type(f"{self.url}{query}", headers=self.headers, **kwargs)
         if result.status_code != await_result:
             self.last_error = f"Выполнение запроса привело к неожидаемому статусу {result.status_code}"
             return True, ""
@@ -75,20 +50,29 @@ class Billing:
         return False, result.json()
 
     def get_rights(self, movie_id: str):
-        error, self.last_json = self._send_post(query=f"/content/check-rights/{movie_id}", await_result=httpx.codes.OK)
+        error, self.last_json = self._send(
+            query=f"/content/check-rights/{movie_id}",
+            send_type=SendType.post,
+            await_result=httpx.codes.OK,
+        )
         if error:
             return False
         return True
 
     def get_products(self):
-        error, self.last_json = self._send_get(query="/billing/products", await_result=httpx.codes.OK)
+        error, self.last_json = self._send(
+            query="/billing/products",
+            send_type=SendType.get,
+            await_result=httpx.codes.OK,
+        )
         if error:
             return False
         return True
 
     def add_product_to_user(self, product_id: str):
-        error, self.last_json = self._send_post(
+        error, self.last_json = self._send(
             query="/billing/add-product",
+            send_type=SendType.post,
             await_result=httpx.codes.CREATED,
             json=dict(
                 id=product_id,
