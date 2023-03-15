@@ -1,4 +1,5 @@
 import json
+import uuid
 from datetime import date, datetime
 from http import HTTPStatus
 
@@ -67,7 +68,7 @@ async def add_product(
     user = await db.get_user(user_id)
 
     # запрос на оплату для передачи в платежную систему
-    pay_req = PaymentToExternalRequest(amount=getattr(product, "price"), currency="RUB",
+    pay_req = PaymentToExternalRequest(id=uuid.uuid4(), amount=getattr(product, "price"), currency="RUB",
                                    user_id=user_id, user_name=getattr(user, "fullname"),
                                    product_name=getattr(product, "name"), email=getattr(user, "email"))
 
