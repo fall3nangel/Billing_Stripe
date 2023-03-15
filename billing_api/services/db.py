@@ -197,6 +197,9 @@ class DBService:
         )
         payment: Payment = res.scalars().first()
 
+        if not payment:
+            return False
+
         res = await self.db.execute(select(Invoice).filter_by(id=payment.invoice_id))
         invoice: Invoice = res.scalars().first()
 
