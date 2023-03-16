@@ -49,8 +49,6 @@ services:
       STRIPE_API_KEY: ${STRIPE_API_KEY}
       STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET}
       STRIPE_MAX_NET_RETRIES: ${STRIPE_MAX_NET_RETRIES}
-    depends_on:
-      - stripe-cli
 
 
   etl:
@@ -74,13 +72,15 @@ services:
       - pay-api
       - billing
       - postgres
+      - stripe-cli
 
   stripe-cli:
+    container_name: stripe-cli
     image: stripe/stripe-cli
     environment:
       API-KEY: ${STRIPE_API_KEY}
       STRIPE_DEVICE_NAME: name
-    command: "listen --api-key ${STRIPE_API_KEY} --forward-to pay-api:8000/webhook/"
+    command: "listen --api-key ${STRIPE_API_KEY} --forward-to pay-api:8000/webhook"
     networks:
       - movies
 
