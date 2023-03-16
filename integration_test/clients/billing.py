@@ -18,7 +18,7 @@ class Billing:
         self.last_json = None
         self.allow_watching = None
 
-    @backoff.on_exception(backoff.expo, httpx.ReadError)
+    @backoff.on_exception(backoff.expo, (httpx.ReadError, httpx.ConnectError))
     def create_test_user(self):
         result = httpx.post(
             f"{self.url}/content/register",

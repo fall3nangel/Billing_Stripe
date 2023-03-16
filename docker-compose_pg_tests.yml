@@ -15,6 +15,10 @@ services:
     environment:
       <<: *postgres-environments
 
+  integration_test:
+    environment:
+      <<: *postgres-environments
+
   postgres:
     container_name: postgres_container_test
     env_file:

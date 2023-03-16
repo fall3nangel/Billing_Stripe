@@ -102,3 +102,10 @@ stop_test_service:
 
 run_test_local: stop_test_service drop_postgres_test run_test_environment
 	cd integration_test && pytest -s
+
+run_test_service: stop_test_service drop_postgres_test
+		docker compose \
+ 		-f docker-compose.yml \
+		-f docker-compose_pg_tests.yml \
+		-f docker-compose.override.yml \
+ 		up --build integration_test

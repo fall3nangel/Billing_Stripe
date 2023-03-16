@@ -1,11 +1,6 @@
 x-debug: &debug-environments
   DEBUG: True
 
-x-rabbit: &rabbit-environments
-  RABBITMQ__USER: ${RABBITMQ__USER}
-  RABBITMQ__PASSWORD: ${RABBITMQ__PASSWORD}
-  RABBITMQ__SERVER: rabbitmq
-
 version: '3.5'
 services:
   admin:
@@ -32,11 +27,9 @@ services:
       - movies
     environment:
       <<: *debug-environments
-      <<: *rabbit-environments
       PAY_URL: pay-api
     depends_on:
       - postgres
-      - rabbitmq
       - redis
 
   pay-api:
@@ -54,22 +47,25 @@ services:
     container_name: etl
     restart: always
     image: etl
-    build: ./etl/
     networks:
       - movies
     depends_on:
       - postgres
 
-  rabbitmq:
-    container_name: rabbitmq
-    image: rabbitmq:3.11.8-management
-    hostname: rabbitmq
-    restart: always
-    environment:
-      - RABBITMQ_DEFAULT_USER=${RABBITMQ__USER}
-      - RABBITMQ_DEFAULT_PASS=${RABBITMQ__PASSWORD}
+  integration_test:
+    container_name: integration_test
+    image: integration_test
     networks:
       - movies
+    environment:
+      PAYAPI_URL_TEST: http://pay-api:8000
+      BILLING_URL_TEST: http://billing:8000
+    depends_on:
+      - etl
+      - pay-api
+      - billing
+      - postgres
+
 
   redis:
     container_name: redis

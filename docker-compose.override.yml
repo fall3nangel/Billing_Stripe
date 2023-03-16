@@ -19,6 +19,11 @@ services:
     ports:
       - 8002:8000
 
+  etl:
+    build: ./etl/
+
+  integration_test:
+    build: ./integration_test/
 
   pgadmin:
     container_name: pgadmin_container
@@ -38,11 +43,6 @@ services:
   redis:
     ports:
       - "6379:6379"
-
-  rabbitmq:
-    ports:
-      - "5672:5672"
-      - "15672:15672"
 
 volumes:
     pgadmin:
