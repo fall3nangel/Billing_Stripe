@@ -93,6 +93,13 @@ run_test_environment:
 		-f docker-compose.override.yml \
  		up -d --build billing pay-api
 
+run_stripe_cli_service:
+	docker compose \
+ 		-f docker-compose.yml \
+		-f docker-compose_pg_tests.yml \
+		-f docker-compose.override.yml \
+ 		up stripe-cli
+
 stop_test_service:
 	docker compose \
  		-f docker-compose.yml \
