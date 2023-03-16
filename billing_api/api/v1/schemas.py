@@ -40,6 +40,7 @@ class PaymentRequest(BaseModel):
     amount: int
     currency: str
     pay_date: datetime
+    url: str
 
 
 class PaymentResponse(BaseModel):

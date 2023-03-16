@@ -80,15 +80,17 @@ async def add_product(
         email=getattr(user, "email"),
     )
 
-    status = await task(
+    resp = await task(
         f"{settings.paymentservice.url}/create-checkout-session",
         pay_req.__dict__,
     )
+    # logging.info(json.loads(resp)["url"])
     return ProductResponse(
         id=getattr(product, "id"),
         name=getattr(product, "name"),
         price=getattr(product, "price"),
         duration=getattr(product, "duration"),
+        url=json.loads(resp)["url"]
     )
 
 
