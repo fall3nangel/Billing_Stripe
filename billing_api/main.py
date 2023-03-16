@@ -1,3 +1,6 @@
+from json import JSONEncoder
+from uuid import UUID
+
 import uvicorn
 from fastapi import FastAPI
 from fastapi.openapi.utils import get_openapi
@@ -6,8 +9,6 @@ from fastapi_pagination import add_pagination
 
 from api.v1 import billing, content
 from core.config import settings
-from db.postgres import Base, db, engine
-from db.queue import close_rabbitmq, get_rabbitmq
 
 app = FastAPI(
     title=settings.project_name,
@@ -42,6 +43,17 @@ def custom_openapi():
 
 
 app.openapi = custom_openapi
+
+old_default = JSONEncoder.default
+
+
+def new_default(self, obj):
+    if isinstance(obj, UUID):
+        return str(obj)
+    return old_default(self, obj)
+
+
+JSONEncoder.default = new_default
 
 
 @app.on_event("startup")

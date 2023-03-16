@@ -23,7 +23,7 @@ from .schemas import (
     ProductRequest,
     ProductResponse,
     PaymentToExternalRequest,
-    RefundPaymentToExternalRequest
+    RefundPaymentToExternalRequest,
 )
 
 from core.config import settings
@@ -70,17 +70,20 @@ async def add_product(
     user = await db.get_user(user_id)
 
     # запрос на оплату для передачи в платежную систему
-    pay_req = PaymentToExternalRequest(id=uuid.uuid4(), amount=getattr(product, "price"), currency="RUB",
-                                   user_id=user_id, user_name=getattr(user, "fullname"),
-                                   product_name=getattr(product, "name"), email=getattr(user, "email"))
+    pay_req = PaymentToExternalRequest(
+        id=uuid.uuid4(),
+        amount=getattr(product, "price"),
+        currency="RUB",
+        user_id=user_id,
+        user_name=getattr(user, "fullname"),
+        product_name=getattr(product, "name"),
+        email=getattr(user, "email"),
+    )
 
-    try:
-        status = await task(
-            f"{settings.paymentservice.url}/create-checkout-session/",
-            pay_req.__dict__,
-        )
-    except Exception as error:
-        logging.exception(error)
+    status = await task(
+        f"{settings.paymentservice.url}/create-checkout-session",
+        pay_req.__dict__,
+    )
     return ProductResponse(
         id=getattr(product, "id"),
         name=getattr(product, "name"),
@@ -138,9 +141,7 @@ async def add_payment(
     # data.id = "3fa85f64-5717-4562-b3fc-2c963f66afa6"
 
     # добавление записи в таблицу платежей
-    payment = await db.add_payment_to_user(
-        user_id, data.amount, data.currency, data.pay_date
-    )
+    payment = await db.add_payment_to_user(user_id, data.amount, data.currency, data.pay_date)
     return PaymentResponse(
         id=getattr(payment, "id"),
         desription=getattr(payment, "description"),
@@ -213,19 +214,12 @@ async def create_invoice(
     tags=["billing"],
     dependencies=[Depends(auth)],
 )
-async def get_payments(
-    fd: date,
-    td: date,
-    request: Request,
-    conn=Depends(get_db)
-) -> Page[PaymentResponse]:
+async def get_payments(fd: date, td: date, request: Request, conn=Depends(get_db)) -> Page[PaymentResponse]:
     user_id = request.state.user_id
-    #user_id = "3fa85f64-5717-4562-b3fc-1c963f66afa6"
+    # user_id = "3fa85f64-5717-4562-b3fc-1c963f66afa6"
 
     # запрос на получение платежей
-    query = (
-        select(Payment).filter(Payment.pay_date >= fd).filter(Payment.pay_date <= td)
-    )
+    query = select(Payment).filter(Payment.pay_date >= fd).filter(Payment.pay_date <= td)
     return await paginate(conn, query)
 
 
@@ -247,7 +241,7 @@ async def get_products(
     db: DBService = Depends(get_db_service),
 ) -> list[ProductResponse]:
     user_id = request.state.user_id
-    #user_id = "3fa85f64-5717-4562-b3fc-1c963f66afa6"
+    # user_id = "3fa85f64-5717-4562-b3fc-1c963f66afa6"
     products = await db.get_all_products()
 
     return [
@@ -259,6 +253,7 @@ async def get_products(
         )
         for p in products
     ]
+
 
 """
 @router.post(
@@ -281,15 +276,16 @@ async def test(
     return True
 """
 
+
 async def request(session, url: str, data: dict):
-    async with session.post(url, json=data) as response:
+    headers = {"accept": "application/json", "Content-Type": "application/json"}
+    async with session.post(url, json=data, headers=headers) as response:
         return await response.text()
 
 
 async def task(url: str, data: dict) -> dict:
     async with aiohttp.ClientSession() as session:
-        logging.info(url)
-        logging.debug("%s", data)
-        task = request(session, url, data)
-        result = await task
+        logging.debug("%s\n%s", url, data)
+        result = await request(session, url, data)
+        logging.debug("%s", result)
         return result
