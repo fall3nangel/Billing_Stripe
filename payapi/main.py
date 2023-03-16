@@ -19,9 +19,10 @@ swagger = Swagger(app)
 
 
 @backoff.on_exception(backoff.expo, requests.exceptions.RequestException)
-def send_successful_payment(self, order_id, payment_intent_id):
-    dictToSend = {"order_id": f"{order_id}", "payment_intent_id": f"{payment_intent_id}"}
-    res = requests.post("http://localhost:5000/add-payment", json=dictToSend)
+def send_successful_payment(order_id, payment_intent_id):
+    dict_to_send = {"order_id": f"{order_id}", "payment_intent_id": f"{payment_intent_id}"}
+    res = requests.post(f"{settings.billing_url}/api/v1/billing/add-payment", json=dict_to_send)
+    logging.debug("%s", res)
 
 
 @app.route("/success")
@@ -132,10 +133,10 @@ def create_checkout_session():
                 }
             ],
             customer=customer_id,
-            metadata={"order_id": "6735"},
+            metadata={"order_id": f"{request_data['order_id']}"},
             mode="payment",
-            success_url="http://localhost:4242/success",
-            cancel_url="http://localhost:4242/cancel",
+            success_url="http://localhost:8002/success",
+            cancel_url="http://localhost:8002/cancel",
             payment_intent_data={
                 "setup_future_usage": "off_session",
                 "metadata": {"order_id": f"{request_data['order_id']}"},

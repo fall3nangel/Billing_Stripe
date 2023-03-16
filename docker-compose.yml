@@ -3,8 +3,10 @@ x-debug: &debug-environments
 
 x-services: &services-environments
   PAYMENTSERVICE__URL: http://pay-api:8000
+  BILLING_URL: http://billing:8000
   PAYAPI_URL_TEST: http://pay-api:8000
   BILLING_URL_TEST: http://billing:8000
+
 
 
 version: '3.5'
@@ -46,10 +48,10 @@ services:
     networks:
       - movies
     environment:
+      <<: *services-environments
       STRIPE_API_KEY: ${STRIPE_API_KEY}
       STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET}
       STRIPE_MAX_NET_RETRIES: ${STRIPE_MAX_NET_RETRIES}
-
 
   etl:
     container_name: etl
@@ -83,6 +85,8 @@ services:
     command: "listen --api-key ${STRIPE_API_KEY} --forward-to pay-api:8000/webhook"
     networks:
       - movies
+    ports:
+      - "4242:4242"
 
   redis:
     container_name: redis
