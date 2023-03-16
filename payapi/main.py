@@ -19,8 +19,8 @@ swagger = Swagger(app)
 
 
 @backoff.on_exception(backoff.expo, requests.exceptions.RequestException)
-def send_successful_payment(order_id, payment_intent_id):
-    dict_to_send = {"order_id": f"{order_id}", "payment_intent_id": f"{payment_intent_id}"}
+def send_successful_payment(order_id, user_id, payment_intent_id):
+    dict_to_send = {"order_id": f"{order_id}", "user_id": f"{user_id}", "payment_intent_id": f"{payment_intent_id}"}
     res = requests.post(f"{settings.billing_url}/api/v1/billing/add-payment", json=dict_to_send)
     logging.debug("%s", res)
 
@@ -111,7 +111,7 @@ def create_checkout_session():
                 payment_method=payment_method_id,
                 off_session=True,
                 confirm=True,
-                metadata={"order_id": f"{request_data['order_id']}"},
+                metadata={"order_id": f"{request_data['order_id']}", "user_id": user_id},
             )
         except stripe.error.CardError as e:  # Error code will be authentication_required if authentication is needed
             err = e.error
@@ -139,7 +139,7 @@ def create_checkout_session():
             cancel_url="http://localhost:8002/cancel",
             payment_intent_data={
                 "setup_future_usage": "off_session",
-                "metadata": {"order_id": f"{request_data['order_id']}"},
+                "metadata": {"order_id": f"{request_data['order_id']}", "user_id": user_id},
             },
         )
         logging.info(f"create-checkout-session, Checkout Session created - {session['id']}")
@@ -192,8 +192,9 @@ def webhook():
     if event and event["type"] == "payment_intent.succeeded":
         payment_intent = event["data"]["object"]
         order_id = payment_intent["metadata"]["order_id"]
-        logging.info(f"create-checkout-session, payment_intent.succeeded,order_id - {order_id}")
-        send_successful_payment(order_id=order_id, payment_intent_id=payment_intent["id"])
+        user_id = payment_intent["metadata"]["user_id"]
+        logging.info(f"create-checkout-session, payment_intent.succeeded,order_id - {order_id}, user_id - {user_id}")
+        send_successful_payment(order_id=order_id, user_id=user_id, payment_intent_id=payment_intent["id"])
     return jsonify(success=True)
 
 
