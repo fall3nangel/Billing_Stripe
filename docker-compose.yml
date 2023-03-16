@@ -1,6 +1,12 @@
 x-debug: &debug-environments
   DEBUG: True
 
+x-services: &services-environments
+  PAYMENTSERVICE__URL: http://pay-api:8000
+  PAYAPI_URL_TEST: http://pay-api:8000
+  BILLING_URL_TEST: http://billing:8000
+
+
 version: '3.5'
 services:
   admin:
@@ -26,8 +32,10 @@ services:
     networks:
       - movies
     environment:
+      PAYMENTSERVICE__URL: http://pay-api:8000
       <<: *debug-environments
-      PAY_URL: pay-api
+      <<: *services-environments
+
     depends_on:
       - postgres
       - redis
@@ -58,8 +66,7 @@ services:
     networks:
       - movies
     environment:
-      PAYAPI_URL_TEST: http://pay-api:8000
-      BILLING_URL_TEST: http://billing:8000
+      <<: *services-environments
     depends_on:
       - etl
       - pay-api

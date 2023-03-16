@@ -1,4 +1,5 @@
 import json
+import logging
 import uuid
 from datetime import date, datetime
 from http import HTTPStatus
@@ -73,10 +74,13 @@ async def add_product(
                                    user_id=user_id, user_name=getattr(user, "fullname"),
                                    product_name=getattr(product, "name"), email=getattr(user, "email"))
 
-    status = await task(
-        f"{settings.users_app.pay_url}/create-checkout-session",
-        pay_req.__dict__,
-    )
+    try:
+        status = await task(
+            f"{settings.paymentservice.url}/create-checkout-session/",
+            pay_req.__dict__,
+        )
+    except Exception as error:
+        logging.exception(error)
     return ProductResponse(
         id=getattr(product, "id"),
         name=getattr(product, "name"),
@@ -169,7 +173,7 @@ async def cancel_payment(
     # удаление платежа
     pay_req = RefundPaymentToExternalRequest(id=data.id)
     status = await task(
-        f"{settings.users_app.pay_url}/refund",
+        f"{settings.paymentservice.url}/refund",
         pay_req.__dict__,
     )
 
@@ -284,6 +288,8 @@ async def request(session, url: str, data: dict):
 
 async def task(url: str, data: dict) -> dict:
     async with aiohttp.ClientSession() as session:
+        logging.info(url)
+        logging.debug("%s", data)
         task = request(session, url, data)
         result = await task
         return result
