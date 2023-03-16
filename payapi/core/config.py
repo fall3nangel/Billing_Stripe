@@ -11,7 +11,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 
 class Settings(BaseSettings):
-    stripe_max_net_retries: str
+    stripe_max_net_retries: int
     stripe_api_key: str
     stripe_webhook_secret: str
     billing_url: str = Field("http://0.0.0.0:8000/billing_api/v1/add-payment")
