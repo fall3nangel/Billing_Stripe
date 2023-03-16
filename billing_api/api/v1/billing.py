@@ -131,19 +131,19 @@ async def del_product(
     summary="Добавление платежа",
     description="Добавление платежа",
     tags=["billing"],
-    dependencies=[Depends(auth)],
+    # dependencies=[Depends(auth)],
 )
 async def add_payment(
-    request: Request,
+    # request: Request,
     data: PaymentRequest = Body(default=None),
     db: DBService = Depends(get_db_service),
 ) -> PaymentResponse:
-    user_id = request.state.user_id
+    # user_id = request.state.user_id
     # user_id = "3fa85f64-5717-4562-b3fc-1c963f66afa6"
     # data.id = "3fa85f64-5717-4562-b3fc-2c963f66afa6"
 
     # добавление записи в таблицу платежей
-    payment = await db.add_payment_to_user(user_id, data.amount, data.currency, data.pay_date)
+    payment = await db.add_payment_to_user(data.user_id, data.amount, data.currency, data.pay_date)
     return PaymentResponse(
         id=getattr(payment, "id"),
         desription=getattr(payment, "description"),
