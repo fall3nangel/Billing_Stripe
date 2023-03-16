@@ -71,7 +71,7 @@ async def add_product(
 
     # запрос на оплату для передачи в платежную систему
     pay_req = PaymentToExternalRequest(
-        id=uuid.uuid4(),
+        order_id=uuid.uuid4(),
         amount=getattr(product, "price"),
         currency="RUB",
         user_id=user_id,

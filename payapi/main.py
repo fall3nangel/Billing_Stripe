@@ -81,6 +81,7 @@ def create_checkout_session():
     """
     payment_method_id = None
     request_data = request.get_json()
+    logging.info(request_data)
     user_id = request_data["user_id"]
     email = request_data["email"]
     customer_search = stripe.Customer.search(query=f'metadata["int_customer_id"]:"{user_id}"')
@@ -125,7 +126,7 @@ def create_checkout_session():
                         "product_data": {
                             "name": f"{request_data['product_name']}",
                         },
-                        "unit_amount": f"{request_data['amount']}",
+                        "unit_amount": f"{int(request_data['amount'])*100}",
                     },
                     "quantity": 1,
                 }
