@@ -62,22 +62,32 @@ async def add_product(
 
     # получение подписки
     product = await db.get_product(product_id)
+    price = getattr(product, "price")
+    product_name = getattr(product, "name")
+    product_id = getattr(product, "id")
+    duration = getattr(product, "duration")
 
     # получение счета на оплату
     # invoice = await db.get_last_invoice_by_user(user_id, product_id)
 
     # получение профиля пользователя
     user = await db.get_user(user_id)
+    fullname = getattr(user, "fullname")
+    email = getattr(user, "email")
+
+    # добавление записи в таблицу платежей
+    payment_id = uuid.uuid4()
+    await db.add_payment_to_user(payment_id, user_id, price, "RUB", None)
 
     # запрос на оплату для передачи в платежную систему
     pay_req = PaymentToExternalRequest(
-        order_id=uuid.uuid4(),
-        amount=getattr(product, "price"),
+        order_id=payment_id,
+        amount=price,
         currency="RUB",
         user_id=user_id,
-        user_name=getattr(user, "fullname"),
-        product_name=getattr(product, "name"),
-        email=getattr(user, "email"),
+        user_name=fullname,
+        product_name=product_name,
+        email=email,
     )
 
     resp = await task(
@@ -86,10 +96,10 @@ async def add_product(
     )
     # logging.info(json.loads(resp)["url"])
     return ProductResponse(
-        id=getattr(product, "id"),
-        name=getattr(product, "name"),
-        price=getattr(product, "price"),
-        duration=getattr(product, "duration"),
+        id=product_id,
+        name=product_name,
+        price=price,
+        duration=duration,
         url=json.loads(resp)["url"]
     )
 
@@ -139,22 +149,33 @@ async def add_payment(
     db: DBService = Depends(get_db_service),
 ) -> PaymentResponse:
     # user_id = request.state.user_id
-    # user_id = "3fa85f64-5717-4562-b3fc-1c963f66afa6"
-    # data.id = "3fa85f64-5717-4562-b3fc-2c963f66afa6"
 
     # добавление записи в таблицу платежей
-    payment = await db.add_payment_to_user(data.user_id, data.amount, data.currency, data.pay_date)
+    # payment = await db.add_payment_to_user(data.user_id, data.amount, data.currency, data.pay_date)
+
+    # получение платежа
+    payment = await db.get_payment(data.order_id)
+    payment_id = getattr(payment, "id")
+    currency = getattr(payment, "currency")
+    amount = getattr(payment, "amount")
+    description = getattr(payment, "description")
+
+    pay_date = datetime.now()
+
+    # обновление платежа
+    await db.update_payment(data.order_id, pay_date, data.payment_intent_id)
+
     return PaymentResponse(
-        id=getattr(payment, "id"),
-        desription=getattr(payment, "description"),
-        amount=getattr(payment, "amount"),
-        currency=getattr(payment, "currency"),
-        pay_date=getattr(payment, "pay_date"),
+        id=payment_id,
+        description=description,
+        amount=amount,
+        currency=currency,
+        pay_date=pay_date,
     )
 
 
 @router.delete(
-    "/cancel-payment",
+    "/cancel-payment/{payment_id}",
     responses={
         int(HTTPStatus.NO_CONTENT): {
             "model": None,
@@ -168,20 +189,23 @@ async def add_payment(
 )
 async def cancel_payment(
     request: Request,
-    data: PaymentRequest = Body(default=None),
+    payment_id: str,
     db: DBService = Depends(get_db_service),
 ) -> None:
     # data.id = "3fa85f64-5717-4562-b3fc-2c963f66afa6"
 
+    # получение платежа
+    payment = await db.get_payment(payment_id)
+
     # удаление платежа
-    pay_req = RefundPaymentToExternalRequest(id=data.id)
+    pay_req = RefundPaymentToExternalRequest(payment_intent_id=getattr(payment, "payment_intent_id"))
     status = await task(
         f"{settings.paymentservice.url}/refund",
         pay_req.__dict__,
     )
 
     # удаление записи из таблицы платежей
-    await db.del_payment(str(data.id))
+    await db.del_payment(payment_id)
 
 
 @router.post(

@@ -27,6 +27,7 @@ class Payment(Base):
     user_id = Column(UUID(as_uuid=True), nullable=False)
     invoice_id = Column(UUID(as_uuid=True), nullable=False)
     description = Column(String, unique=False, nullable=True)
+    payment_intent_id = Column(String, unique=False, nullable=True)
     amount = Column(DECIMAL(10, 2))
     currency = Column(
         "currency", Enum(Currency, name="currency_enum", create_type=False)

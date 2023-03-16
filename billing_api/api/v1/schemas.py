@@ -32,15 +32,13 @@ class PaymentToExternalRequest(BaseModel):
     product_name: str
 
 class RefundPaymentToExternalRequest(BaseModel):
-    id: UUID
+    payment_intent_id: UUID
 
 
 class PaymentRequest(BaseModel):
-    id: UUID
-    amount: int
-    currency: str
-    pay_date: datetime
-    url: str
+    order_id: str
+    user_id: str
+    payment_intent_id: str
 
 
 class PaymentResponse(BaseModel):

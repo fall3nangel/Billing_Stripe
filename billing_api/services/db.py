@@ -39,6 +39,21 @@ class DBService:
         )
         return res.scalars().first()
 
+    async def get_payment(self, id: str):
+        from models.payment import Payment
+
+        res = await self.db.execute(select(Payment).filter_by(id=id))
+        return res.scalars().first()
+
+    async def update_payment(self, id: str, pay_date: datetime, intent_id: str):
+        from models.payment import Payment
+
+        payment = await self.db.execute(select(Payment).filter_by(id=id))
+
+        setattr(payment, "pay_date", pay_date)
+        setattr(payment, "payment_intent_id", intent_id)
+        await self.db.commit()
+
     async def get_last_payment_by_user(self, user_id: str, product_id: str):
         from models.payment import Payment
 
@@ -66,7 +81,7 @@ class DBService:
             description=f"Счет на оплату {product.name}",
             price=product.price,
             start_date=datetime.now(),
-            finish_date=None,
+            finish_date=datetime.now() + relativedelta(month=1),
         )
         self.db.add(invoice)
         await self.db.commit()
@@ -125,7 +140,7 @@ class DBService:
         return product
 
     async def add_payment_to_user(
-        self, user_id: str, amount: int, currency: str, pay_date: datetime
+        self, payment_id: str, user_id: str, amount: int, currency: str, pay_date: datetime
     ):
         from models.invoice import Invoice
         from models.payment import Currency, Payment
@@ -138,6 +153,7 @@ class DBService:
         invoice = res.scalars().first()
 
         payment = Payment(
+            id=payment_id,
             product_id=invoice.product_id,
             user_id=user_id,
             invoice_id=invoice.id,
@@ -148,6 +164,13 @@ class DBService:
         )
         self.db.add(payment)
         await self.db.commit()
+
+        res = await self.db.execute(
+            select(Invoice)
+            .filter_by(user_id=user_id)
+            .order_by(Invoice.start_date.desc())
+        )
+        invoice = res.scalars().first()
 
         payment = await self.get_last_payment_by_user(user_id, invoice.product_id)
 
