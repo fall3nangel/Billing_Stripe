@@ -85,8 +85,6 @@ services:
     command: "listen --api-key ${STRIPE_API_KEY} --forward-to pay-api:8000/webhook"
     networks:
       - movies
-    ports:
-      - "4242:4242"
 
   redis:
     container_name: redis
