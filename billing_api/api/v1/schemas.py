@@ -47,7 +47,7 @@ class PaymentResponse(BaseModel):
     description: str
     amount: int
     currency: Currency
-    pay_date: datetime
+    pay_date: datetime = None
 
     class Config:
         orm_mode = True

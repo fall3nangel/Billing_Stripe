@@ -37,7 +37,7 @@ def test_1(db_session, initial_data, billing_client, send_telegram_notify):
             print(billing_client.last_json)
             if billing_client.last_json['items']:
                 return
-            time.sleep(5)
+            time.sleep(10)
         else:
             assert False, "За две минуты не было получено подтверждение об оплате"
 

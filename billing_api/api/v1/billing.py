@@ -3,6 +3,7 @@ import logging
 import uuid
 from datetime import date, datetime
 from http import HTTPStatus
+from typing import Optional
 
 import aiohttp
 from fastapi import APIRouter, Body, Depends, Request
@@ -46,9 +47,9 @@ router = APIRouter()
     dependencies=[Depends(auth)],
 )
 async def add_product(
-    request: Request,
-    product_id: str,
-    db: DBService = Depends(get_db_service),
+        request: Request,
+        product_id: str,
+        db: DBService = Depends(get_db_service),
 ) -> ProductResponse:
     user_id = request.state.user_id
 
@@ -116,9 +117,9 @@ async def add_product(
     dependencies=[Depends(auth)],
 )
 async def del_product(
-    request: Request,
-    data: ProductRequest = Body(default=None),
-    db: DBService = Depends(get_db_service),
+        request: Request,
+        data: ProductRequest = Body(default=None),
+        db: DBService = Depends(get_db_service),
 ) -> None:
     user_id = request.state.user_id
     # user_id = "3fa85f64-5717-4562-b3fc-1c963f66afa6"
@@ -142,9 +143,9 @@ async def del_product(
     # dependencies=[Depends(auth)],
 )
 async def add_payment(
-    # request: Request,
-    data: PaymentRequest = Body(default=None),
-    db: DBService = Depends(get_db_service),
+        # request: Request,
+        data: PaymentRequest = Body(default=None),
+        db: DBService = Depends(get_db_service),
 ) -> PaymentResponse:
     # user_id = request.state.user_id
 
@@ -186,9 +187,9 @@ async def add_payment(
     dependencies=[Depends(auth)],
 )
 async def cancel_payment(
-    request: Request,
-    payment_id: str,
-    db: DBService = Depends(get_db_service),
+        request: Request,
+        payment_id: str,
+        db: DBService = Depends(get_db_service),
 ) -> None:
     # data.id = "3fa85f64-5717-4562-b3fc-2c963f66afa6"
 
@@ -220,7 +221,7 @@ async def cancel_payment(
     # dependencies=[Depends(auth)],
 )
 async def create_invoice(
-    user_id: str,
+        user_id: str,
 ) -> InvoiceResponse:
     pass
 
@@ -229,7 +230,7 @@ async def create_invoice(
     "/payments",
     responses={
         int(HTTPStatus.OK): {
-            "model": Page[PaymentResponse],
+            "model": Page[Optional[PaymentResponse]],
             "description": "Successful Response",
         },
     },
@@ -240,12 +241,8 @@ async def create_invoice(
 )
 async def get_payments(request: Request, conn=Depends(get_db)) -> Page[PaymentResponse]:
     user_id = request.state.user_id
-    query = select(Payment).filter(Payment.user_id == user_id)
-    try:
-        result = await paginate(conn, query)
-    except Exception as error:
-        logging.exception(error)
-        return {"items": [], "total": 0, "page": 1, "size": 50, "pages": 0}
+    query = select(Payment).filter(Payment.user_id == user_id, Payment.pay_date != None)
+    result = await paginate(conn, query)
     return result
 
 
@@ -263,11 +260,10 @@ async def get_payments(request: Request, conn=Depends(get_db)) -> Page[PaymentRe
     dependencies=[Depends(auth)],
 )
 async def get_products(
-    request: Request,
-    db: DBService = Depends(get_db_service),
+        request: Request,
+        db: DBService = Depends(get_db_service),
 ) -> list[ProductResponse]:
     user_id = request.state.user_id
-    # user_id = "3fa85f64-5717-4562-b3fc-1c963f66afa6"
     products = await db.get_all_products()
 
     return [
@@ -279,28 +275,6 @@ async def get_products(
         )
         for p in products
     ]
-
-
-"""
-@router.post(
-    "/test",
-    responses={
-        int(HTTPStatus.CREATED): {
-            "model": bool,
-            "description": "Successful Response",
-        },
-    },
-    summary="Test",
-    description="Test",
-    tags=["billing"],
-    # dependencies=[Depends(auth)],
-)
-async def test(
-    data: PaymentRequest = Body(default=None),
-) -> bool:
-    pay = PaymentToExternalRequest(id="3fa85f64-5717-4562-b3fc-1c963f66afa6", amount=100, currency="RUB", user_id="3fa85f64-5717-4562-b3fc-1c963f66afa6", user_name="ivanov", product_name="test", email="ivanov@test.com")
-    return True
-"""
 
 
 async def request(session, url: str, data: dict):
