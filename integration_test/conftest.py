@@ -7,6 +7,7 @@ import pytest
 
 from clients.billing import Billing
 from clients.payapi import PayApi
+from clients.telegram import TelegramReporter
 from core.config import settings
 from models.product import Product, Movie
 from postgres import SessionTesting
@@ -30,6 +31,16 @@ def payapi_client():
 @pytest.fixture(scope="session")
 def db_session(billing_client) -> Generator[SessionTesting, Any, None]:
     yield SessionTesting()
+
+
+@pytest.fixture(scope="session")
+def send_telegram_notify():
+    telegream_client = TelegramReporter(token=settings.telegram.token, chat_id=settings.telegram.chat)
+    def inner(message):
+        return telegream_client.send_notify(message=message)
+
+
+    return inner
 
 
 @pytest.fixture(scope="session")

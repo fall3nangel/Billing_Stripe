@@ -94,13 +94,13 @@ async def add_product(
         f"{settings.paymentservice.url}/create-checkout-session",
         pay_req.__dict__,
     )
-    # logging.info(json.loads(resp)["url"])
+    logging.debug(json.loads(resp)["url"])
     return ProductResponse(
         id=product_id,
         name=product_name,
         price=price,
         duration=duration,
-        url=json.loads(resp)["url"]
+        url=json.loads(resp)["url"],
     )
 
 
