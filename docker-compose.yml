@@ -7,7 +7,9 @@ x-services: &services-environments
   PAYAPI_URL_TEST: http://pay-api:8000
   BILLING_URL_TEST: http://billing:8000
 
-
+x-telegram: &telegram-environments
+  TELEGRAM__TOKEN: ${TELEGRAM__TOKEN}
+  TELEGRAM__CHAT: ${TELEGRAM__CHAT}
 
 version: '3.5'
 services:
@@ -69,6 +71,7 @@ services:
       - movies
     environment:
       <<: *services-environments
+      <<: *telegram-environments
     depends_on:
       - etl
       - pay-api

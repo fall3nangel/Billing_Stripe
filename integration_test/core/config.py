@@ -18,9 +18,15 @@ class Postgres(BaseSettings):
     password: str = Field("123qwe")
 
 
+class Telegram(BaseSettings):
+    token: str = Field("6034914427:AAHDvUiv-3ULTX-PTrsIY85UMnoU67jaf1A")
+    chat: str = Field("-895829670")
+
+
 class Settings(BaseSettings):
     postgres: Postgres = Field(Postgres())
     project_name: str = Field("integartion_tests")
+    telegram: Telegram = Field(Telegram())
     debug: bool = Field(False)
     payapi_url_test: str
     billing_url_test: str

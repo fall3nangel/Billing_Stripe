@@ -16,6 +16,7 @@ class ProductResponse(BaseModel):
     name: str
     price: int
     duration: ProductDuration
+    url: str | None = None
 
 class InvoiceResponse(BaseModel):
     id: str
