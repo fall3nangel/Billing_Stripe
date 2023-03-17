@@ -51,8 +51,6 @@ async def add_product(
     db: DBService = Depends(get_db_service),
 ) -> ProductResponse:
     user_id = request.state.user_id
-    # user_id = "3fa85f64-5717-4562-b3fc-1c963f66afa6"
-    # data.id = "3fa85f64-5717-4562-b3fc-2c963f66afa6"
 
     # добавление подписки в профиль пользователя
     await db.add_product_to_user(product_id, user_id)
@@ -228,7 +226,7 @@ async def create_invoice(
 
 
 @router.get(
-    "/payments/{fd}/{td}",
+    "/payments",
     responses={
         int(HTTPStatus.OK): {
             "model": Page[PaymentResponse],
@@ -240,13 +238,15 @@ async def create_invoice(
     tags=["billing"],
     dependencies=[Depends(auth)],
 )
-async def get_payments(fd: date, td: date, request: Request, conn=Depends(get_db)) -> Page[PaymentResponse]:
+async def get_payments(request: Request, conn=Depends(get_db)) -> Page[PaymentResponse]:
     user_id = request.state.user_id
-    # user_id = "3fa85f64-5717-4562-b3fc-1c963f66afa6"
-
-    # запрос на получение платежей
-    query = select(Payment).filter(Payment.pay_date >= fd).filter(Payment.pay_date <= td)
-    return await paginate(conn, query)
+    query = select(Payment).filter(Payment.user_id == user_id)
+    try:
+        result = await paginate(conn, query)
+    except Exception as error:
+        logging.exception(error)
+        return {"items": [], "total": 0, "page": 1, "size": 50, "pages": 0}
+    return result
 
 
 @router.get(

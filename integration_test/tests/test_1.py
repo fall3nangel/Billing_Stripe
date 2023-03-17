@@ -1,3 +1,5 @@
+import time
+
 from models.product import Product
 import allure
 from allure import step
@@ -26,9 +28,20 @@ def test_1(db_session, initial_data, billing_client, send_telegram_notify):
         assert billing_client.get_rights(movie_id=movies[0].id), billing_client.last_error
         assert not billing_client.last_json['allow']
 
-    with step("Оплата подписки пользователем"):
-        send_telegram_notify(f"Оплату необходимо произвести по ссылке\n{checkout_url}")
+    with step("Ожидание оплаты подписки пользователем в течении 2-х минут"):
+        #send_telegram_notify(f"Оплату необходимо произвести по ссылке\n{checkout_url}")
         print(f"Оплату необходимо произвести по ссылке {checkout_url}")
+        start_time = time.time()
+        while time.time() < start_time + 120:
+            billing_client.get_payments()
+            print(billing_client.last_json)
+            if billing_client.last_json['items']:
+                return
+            time.sleep(5)
+        else:
+            assert False, "За две минуты не было получено подтверждение об оплате"
+
+
 
 
     '''with step("Отмена платежа"):
