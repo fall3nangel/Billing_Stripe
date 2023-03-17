@@ -1,5 +1,5 @@
 import logging
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 
 from dateutil.relativedelta import relativedelta
 from sqlalchemy import select
@@ -80,8 +80,8 @@ class DBService:
             user_id=user_id,
             description=f"Счет на оплату {product.name}",
             price=product.price,
-            start_date=datetime.now(),
-            finish_date=datetime.now() + relativedelta(month=1),
+            start_date=datetime.now().replace(tzinfo=None),
+            finish_date=(datetime.now() + timedelta(days=+31)).replace(tzinfo=None),
         )
         self.db.add(invoice)
         await self.db.commit()
@@ -99,8 +99,8 @@ class DBService:
             user_id=user_id,
             description=f"Счет на оплату",
             price=price,
-            start_date=start_date,
-            finish_date=start_date + relativedelta(month=1),
+            start_date=start_date.replace(tzinfo=None),
+            finish_date=(start_date + timedelta(days=+31)).replace(tzinfo=None),
         )
         self.db.add(invoice)
         await self.db.commit()

@@ -227,7 +227,7 @@ async def create_invoice(
 
 
 @router.get(
-    "/payments",
+    "/payments/{fd}/{td}",
     responses={
         int(HTTPStatus.OK): {
             "model": Page[Optional[PaymentResponse]],
@@ -239,9 +239,11 @@ async def create_invoice(
     tags=["billing"],
     dependencies=[Depends(auth)],
 )
-async def get_payments(request: Request, conn=Depends(get_db)) -> Page[PaymentResponse]:
+async def get_payments(request: Request, fd:date, td: date, conn=Depends(get_db)) -> Page[PaymentResponse]:
     user_id = request.state.user_id
-    query = select(Payment).filter(Payment.user_id == user_id, Payment.pay_date != None)
+    # user_id = "3fa85f64-5717-4562-b3fc-1c963f66afa6"
+    query = select(Payment) # .filter(Payment.user_id == user_id, Payment.pay_date > fd, Payment.pay_date < td)
+    # query = select(Payment).filter(Payment.user_id == user_id, Payment.pay_date != None)
     result = await paginate(conn, query)
     return result
 

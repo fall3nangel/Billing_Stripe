@@ -102,7 +102,7 @@ class Billing:
 
     def get_payments(self):
         error, self.last_json = self._send(
-            query=f"/billing/payments?page=1&size=50",
+            query=f"/billing/payments/2023-03-01/2023-04-01?page=1&size=50",
             send_type=SendType.get,
             await_result=httpx.codes.OK,
         )
