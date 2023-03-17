@@ -1,14 +1,23 @@
 FROM python:3.10.8
 
 WORKDIR /opt/app
+ENV PATH="/opt/app:${PATH}"
+
+RUN apt-get update \
+    && apt-get -y install netcat \
+    && apt clean \
+    && rm -rf /var/lib/apt/lists/*
+
 
 COPY requirements.txt requirements.txt
 
+
 RUN pip install --upgrade pip \
-    && pip install -r requirements.txt
+    && pip install -r requirements.txt --no-cache-dir
+
 
 COPY . .
 
 EXPOSE 8000
 
-CMD ["gunicorn", "main:app", "--workers", "1", "--worker-class", "uvicorn.workers.UvicornH11Worker", "--bind", "0.0.0.0:8000"]
+CMD ["init.sh"]

@@ -7,7 +7,7 @@ from core.config import settings
 
 
 def encode_jwt(user_id: str) -> dict[str, str]:
-    payload = {"user_id": user_id, "exp": time.time() + 600}
+    payload = {"user_id": str(user_id), "exp": time.time() + 600}
     token = jwt.encode(
         payload,
         settings.users_app.jwt_secret_key,
