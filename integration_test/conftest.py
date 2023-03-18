@@ -1,4 +1,3 @@
-import logging
 from pathlib import Path
 from typing import Any
 from typing import Generator
@@ -36,9 +35,9 @@ def db_session(billing_client) -> Generator[SessionTesting, Any, None]:
 @pytest.fixture(scope="session")
 def send_telegram_notify():
     telegream_client = TelegramReporter(token=settings.telegram.token, chat_id=settings.telegram.chat)
+
     def inner(message):
         return telegream_client.send_notify(message=message)
-
 
     return inner
 

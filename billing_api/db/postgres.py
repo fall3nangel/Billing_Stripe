@@ -16,9 +16,7 @@ schema = "users"
 engine = create_async_engine(POSTGRES_URL, echo=True)
 engine.execution_options(schema_translate_map={None: schema})
 
-SessionLocal = sessionmaker(
-    autocommit=False, autoflush=False, bind=engine, class_=AsyncSession
-)
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine, class_=AsyncSession)
 Base = declarative_base()
 db = SessionLocal()
 

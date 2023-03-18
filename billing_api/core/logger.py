@@ -37,10 +37,6 @@ LOGGING = {
         },
     },
     "loggers": {
-        "": {
-            "handlers": LOG_DEFAULT_HANDLERS,
-            "level": "INFO",
-        },
         "uvicorn.error": {
             "level": "INFO",
         },
@@ -49,6 +45,9 @@ LOGGING = {
             "level": "INFO",
             "propagate": False,
         },
+        "sqlalchemy": {"level": "ERROR"},
+        "sqlalchemy.engine": {"level": "ERROR"},
+        "sqlalchemy.engine.Engine": {"level": "ERROR"},
     },
     "root": {
         "level": "INFO",

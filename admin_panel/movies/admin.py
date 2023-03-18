@@ -29,4 +29,3 @@ class ProductAdmin(admin.ModelAdmin):
         "price",
     )
     search_fields = ("name",)
-

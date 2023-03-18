@@ -1,17 +1,11 @@
 import sys
 from logging.config import fileConfig
 
-from sqlalchemy import engine_from_config, pool
-
 from alembic import context
+from sqlalchemy import engine_from_config, pool
 
 sys.path = ["", ".."] + sys.path[1:]
 
-import models.invoice
-import models.payment
-import models.product
-import models.role
-import models.user
 from db.postgres import Base
 
 # this is the Alembic Config object, which provides
@@ -74,9 +68,7 @@ def run_migrations_online() -> None:
 
     with connectable.connect() as connection:
         # todo change on env
-        connection.execute(
-            "CREATE SCHEMA IF NOT EXISTS users; SET search_path TO users;"
-        )
+        connection.execute("CREATE SCHEMA IF NOT EXISTS users; SET search_path TO users;")
 
         context.configure(
             connection=connection,

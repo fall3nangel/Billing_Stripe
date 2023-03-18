@@ -11,12 +11,11 @@ https://docs.djangoproject.com/en/4.0/ref/settings/
 """
 
 
-from split_settings.tools import include
-
 import logging
 from pathlib import Path
 
 from pydantic import BaseSettings, BaseModel, Field
+from split_settings.tools import include
 
 ADMIN_PATH = Path(__file__).resolve().parent.parent
 BASE_DIR = ADMIN_PATH.parent

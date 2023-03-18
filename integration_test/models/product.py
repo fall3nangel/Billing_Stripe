@@ -1,21 +1,17 @@
-import datetime
+import enum
 import enum
 import uuid
 
 from sqlalchemy import (
     DECIMAL,
-    TIMESTAMP,
-    Boolean,
     Column,
     Enum,
     ForeignKey,
-    ForeignKeyConstraint,
-    Integer,
     String,
     Table,
 )
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.orm import foreign, relationship, remote
+from sqlalchemy.orm import relationship
 
 from postgres import Base
 
@@ -70,9 +66,7 @@ class Product(Base):
     )
     name = Column(String, nullable=False)
     price = Column(DECIMAL(10, 2))
-    duration = Column(
-        "duration", Enum(ProductDuration, name="duration_enum", create_type=False)
-    )
+    duration = Column("duration", Enum(ProductDuration, name="duration_enum", create_type=False))
     movies = relationship(
         "Movie",
         secondary=product_movie,
