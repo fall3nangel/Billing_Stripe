@@ -11,4 +11,4 @@ COPY . .
 
 EXPOSE 8000
 
-CMD ["pytest", "tests/"]
+CMD ["pytest", "tests/", "-s", "--allure-send"]
