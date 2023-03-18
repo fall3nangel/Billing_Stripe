@@ -46,7 +46,7 @@ def billing_client():
     return client
 
 
-@allure.title(f"Подключение в БД")
+@allure.title(f"Подключение к БД")
 @pytest.fixture(scope="session")
 def db_session(billing_client) -> Generator[SessionTesting, Any, None]:
     yield SessionTesting()

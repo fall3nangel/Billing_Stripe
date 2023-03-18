@@ -44,4 +44,4 @@ def test_1(db_session, initial_data, billing_client, send_telegram_notify):
 
     with step("Проверка успешного доступа к контенту после оформления подписки"):
         assert billing_client.get_rights(movie_id=movies[0].id), billing_client.last_error
-        assert billing_client.last_json["allow"]
+        assert billing_client.last_json["allow"], "У пользователя нет прав на просмотр фильма"
