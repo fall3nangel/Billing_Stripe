@@ -64,23 +64,12 @@ flowchart TB
             Кэширует ответы на запросы
             на доступ к продуктам,
             Кэширует выдачу токенов"]
-            
-        Scheduler["Scheduler
-            []
-            
-            Запуск периодической процедуры
-            выставления счетов по подписке"]
         
-        Queue["Queue
-            [RabbitMQ]
-            
-            Передача событий
-            для других систем"]
         
         BillingAPI<-->BillingDB
         BillingAPI<-->BillingCache
-        BillingDB<-->Scheduler
-        BillingAPI-->Queue
+
+
 
     end
      
@@ -115,8 +104,7 @@ flowchart TB
     MovieDB-->Admin_panel_TO_UserService
     Admin_panel_TO_UserService-->BillingDB
     
-    Scheduler--"Выставление периодических счетов на оплату"-->BillingAPI
-    
+     
     class AdminPanel api
     class PayAPI api
     class UserAPI api
