@@ -15,7 +15,7 @@ def test_1(db_session, initial_data, billing_client, send_telegram_notify):
 
     with step("Проверка отсутствия прав у пользователя на просмотр фильма"):
         assert billing_client.get_rights(movie_id=movies[0].id), billing_client.last_error
-        assert not billing_client.last_json['allow']
+        assert not billing_client.last_json['allow'], "Нет прав"
 
     with step("Запрос пользователем на покупку подписки"):
         assert billing_client.add_product_to_user(

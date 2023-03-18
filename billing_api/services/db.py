@@ -223,13 +223,16 @@ class DBService:
         if not payment:
             return False
 
-        res = await self.db.execute(select(Invoice).filter_by(id=payment.invoice_id))
+        if payment.pay_date:
+            return True
+
+        """res = await self.db.execute(select(Invoice).filter_by(id=payment.invoice_id))
         invoice: Invoice = res.scalars().first()
 
         if invoice.start_date.replace(tzinfo=None) <= datetime.now() and (
             invoice.finish_date is None or datetime.now() < invoice.finish_date.replace(tzinfo=None)
         ):
-            return True
+            return True"""
 
         """deadline = datetime.now() - relativedelta(month=1)
 
