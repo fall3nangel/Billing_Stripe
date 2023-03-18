@@ -63,9 +63,6 @@ async def add_product(
     product_id = getattr(product, "id")
     duration = getattr(product, "duration")
 
-    # получение счета на оплату
-    # invoice = await db.get_last_invoice_by_user(user_id, product_id)
-
     # получение профиля пользователя
     user = await db.get_user(user_id)
     fullname = getattr(user, "fullname")
@@ -119,8 +116,6 @@ async def del_product(
     db: DBService = Depends(get_db_service),
 ) -> None:
     user_id = request.state.user_id
-    # user_id = "3fa85f64-5717-4562-b3fc-1c963f66afa6"
-    # data.id = "3fa85f64-5717-4562-b3fc-2c963f66afa6"
 
     # удаление подписки из профиля пользователя
     await db.del_product_from_user(str(data.id), user_id)
@@ -144,10 +139,6 @@ async def add_payment(
     data: PaymentRequest = Body(default=None),
     db: DBService = Depends(get_db_service),
 ) -> PaymentResponse:
-    # user_id = request.state.user_id
-
-    # добавление записи в таблицу платежей
-    # payment = await db.add_payment_to_user(data.order_id, data.user_id, data.amount, "RUB", datetime.now())
 
     # получение платежа
     payment = await db.get_payment(data.order_id)
