@@ -1,3 +1,4 @@
+import logging
 import time
 
 from models.product import Product
@@ -35,14 +36,16 @@ def test_1(db_session, initial_data, billing_client, send_telegram_notify):
         while time.time() < start_time + 120:
             billing_client.get_payments()
             print(billing_client.last_json)
-            if billing_client.last_json['items']:
+            if billing_client.last_json['items'][0]["pay_date"]:
                 return
             time.sleep(10)
         else:
             assert False, "За две минуты не было получено подтверждение об оплате"
 
 
-
+    with step("Проверка отсутствия прав у пользователя на просмотр фильма после оформления подписки"):
+        assert billing_client.get_rights(movie_id=movies[0].id), billing_client.last_error
+        assert billing_client.last_json['allow']
 
     '''with step("Отмена платежа"):
         payments = billing_client.get_payments()

@@ -150,7 +150,7 @@ async def add_payment(
     # user_id = request.state.user_id
 
     # добавление записи в таблицу платежей
-    # payment = await db.add_payment_to_user(data.user_id, data.amount, data.currency, data.pay_date)
+    # payment = await db.add_payment_to_user(data.order_id, data.user_id, data.amount, "RUB", datetime.now())
 
     # получение платежа
     payment = await db.get_payment(data.order_id)

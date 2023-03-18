@@ -40,6 +40,7 @@ class PaymentRequest(BaseModel):
     order_id: str
     user_id: str
     payment_intent_id: str
+    amount: int
 
 
 class PaymentResponse(BaseModel):
