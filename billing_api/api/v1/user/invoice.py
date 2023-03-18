@@ -1,9 +1,7 @@
 from fastapi import APIRouter, Depends
-from sqlalchemy.ext.asyncio import async_session
 
 from api.v1.schemas import InvoiceResponse
 from db.postgres import get_db_service
-from models.product import Product
 from services.db import DBService
 
 router = APIRouter()

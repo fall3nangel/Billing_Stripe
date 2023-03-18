@@ -1,18 +1,18 @@
 import datetime
-import uuid
-import string
 import secrets
-from pbkdf2 import crypt
+import string
+import uuid
 
-from sqlalchemy import TIMESTAMP, Boolean, Column, ForeignKey, Integer, String, Table
+from pbkdf2 import crypt
+from sqlalchemy import TIMESTAMP, Column, ForeignKey, Integer, String, Table
 from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
 
+from core.config import settings
 from db.postgres import Base
 from models.product import Product
 from models.role import Role, user_role
-from sqlalchemy.ext.hybrid import hybrid_property
-from core.config import settings
 
 user_product = Table(
     "user_product_link",
@@ -103,9 +103,7 @@ class User(Base):
     @plain_password.setter
     def plain_password(self, plaintext):
         alphabet = string.ascii_letters + string.digits
-        salt = "".join(
-            secrets.choice(alphabet) for _ in range(settings.users_app.salt_length)
-        )
+        salt = "".join(secrets.choice(alphabet) for _ in range(settings.users_app.salt_length))
         hpswd = crypt(plaintext, salt, iterations=settings.users_app.psw_hash_iterations)
         parts_hpswd = hpswd.split("$")
         self.password = f"{parts_hpswd[3]}{parts_hpswd[4]}"
@@ -119,7 +117,7 @@ class User(Base):
                 settings.users_app.kdf_algorithm,
                 f"{settings.users_app.psw_hash_iterations:x}",
                 salt,
-                self.password[settings.users_app.salt_length:],
+                self.password[settings.users_app.salt_length :],
             ]
         )
         return hpswd == hpswd_db

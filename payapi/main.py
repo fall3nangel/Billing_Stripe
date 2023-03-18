@@ -20,7 +20,12 @@ swagger = Swagger(app)
 
 @backoff.on_exception(backoff.expo, requests.exceptions.RequestException)
 def send_successful_payment(order_id, user_id, payment_intent_id, amount):
-    dict_to_send = {"order_id": f"{order_id}", "user_id": f"{user_id}", "payment_intent_id": f"{payment_intent_id}", "amount": amount}
+    dict_to_send = {
+        "order_id": f"{order_id}",
+        "user_id": f"{user_id}",
+        "payment_intent_id": f"{payment_intent_id}",
+        "amount": amount,
+    }
     res = requests.post(f"{settings.billing_url}/api/v1/billing/add-payment", json=dict_to_send)
     logging.debug("%s", res)
 
@@ -194,7 +199,9 @@ def webhook():
         order_id = payment_intent["metadata"]["order_id"]
         user_id = payment_intent["metadata"]["user_id"]
         logging.info(f"create-checkout-session, payment_intent.succeeded,order_id - {order_id}, user_id - {user_id}")
-        send_successful_payment(order_id=order_id, user_id=user_id, payment_intent_id=payment_intent["id"], amount=100000)
+        send_successful_payment(
+            order_id=order_id, user_id=user_id, payment_intent_id=payment_intent["id"], amount=100000
+        )
     return jsonify(success=True)
 
 

@@ -8,15 +8,14 @@ from typing import Optional
 import aiohttp
 from fastapi import APIRouter, Body, Depends, Request
 from fastapi_pagination import Page
-
 from fastapi_pagination.ext.async_sqlalchemy import paginate
 from sqlalchemy import select
 
 from auth.auth_bearer import auth
+from core.config import settings
 from db.postgres import get_db, get_db_service
 from models.payment import Payment
 from services.db import DBService
-
 from .schemas import (
     InvoiceResponse,
     PaymentRequest,
@@ -26,8 +25,6 @@ from .schemas import (
     PaymentToExternalRequest,
     RefundPaymentToExternalRequest,
 )
-
-from core.config import settings
 
 router = APIRouter()
 
@@ -47,9 +44,9 @@ router = APIRouter()
     dependencies=[Depends(auth)],
 )
 async def add_product(
-        request: Request,
-        product_id: str,
-        db: DBService = Depends(get_db_service),
+    request: Request,
+    product_id: str,
+    db: DBService = Depends(get_db_service),
 ) -> ProductResponse:
     user_id = request.state.user_id
 
@@ -117,9 +114,9 @@ async def add_product(
     dependencies=[Depends(auth)],
 )
 async def del_product(
-        request: Request,
-        data: ProductRequest = Body(default=None),
-        db: DBService = Depends(get_db_service),
+    request: Request,
+    data: ProductRequest = Body(default=None),
+    db: DBService = Depends(get_db_service),
 ) -> None:
     user_id = request.state.user_id
     # user_id = "3fa85f64-5717-4562-b3fc-1c963f66afa6"
@@ -143,9 +140,9 @@ async def del_product(
     # dependencies=[Depends(auth)],
 )
 async def add_payment(
-        # request: Request,
-        data: PaymentRequest = Body(default=None),
-        db: DBService = Depends(get_db_service),
+    # request: Request,
+    data: PaymentRequest = Body(default=None),
+    db: DBService = Depends(get_db_service),
 ) -> PaymentResponse:
     # user_id = request.state.user_id
 
@@ -187,9 +184,9 @@ async def add_payment(
     dependencies=[Depends(auth)],
 )
 async def cancel_payment(
-        request: Request,
-        payment_id: str,
-        db: DBService = Depends(get_db_service),
+    request: Request,
+    payment_id: str,
+    db: DBService = Depends(get_db_service),
 ) -> None:
     # data.id = "3fa85f64-5717-4562-b3fc-2c963f66afa6"
 
@@ -221,7 +218,7 @@ async def cancel_payment(
     # dependencies=[Depends(auth)],
 )
 async def create_invoice(
-        user_id: str,
+    user_id: str,
 ) -> InvoiceResponse:
     pass
 
@@ -239,10 +236,10 @@ async def create_invoice(
     tags=["billing"],
     dependencies=[Depends(auth)],
 )
-async def get_payments(request: Request, fd:date, td: date, conn=Depends(get_db)) -> Page[PaymentResponse]:
+async def get_payments(request: Request, fd: date, td: date, conn=Depends(get_db)) -> Page[PaymentResponse]:
     user_id = request.state.user_id
     # user_id = "3fa85f64-5717-4562-b3fc-1c963f66afa6"
-    query = select(Payment) # .filter(Payment.user_id == user_id, Payment.pay_date > fd, Payment.pay_date < td)
+    query = select(Payment)  # .filter(Payment.user_id == user_id, Payment.pay_date > fd, Payment.pay_date < td)
     # query = select(Payment).filter(Payment.user_id == user_id, Payment.pay_date != None)
     result = await paginate(conn, query)
     return result
@@ -262,8 +259,8 @@ async def get_payments(request: Request, fd:date, td: date, conn=Depends(get_db)
     dependencies=[Depends(auth)],
 )
 async def get_products(
-        request: Request,
-        db: DBService = Depends(get_db_service),
+    request: Request,
+    db: DBService = Depends(get_db_service),
 ) -> list[ProductResponse]:
     user_id = request.state.user_id
     products = await db.get_all_products()

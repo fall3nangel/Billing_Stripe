@@ -18,6 +18,7 @@ class ProductResponse(BaseModel):
     duration: ProductDuration
     url: str | None = None
 
+
 class InvoiceResponse(BaseModel):
     id: str
     cost: int
@@ -31,6 +32,7 @@ class PaymentToExternalRequest(BaseModel):
     user_name: str
     email: str
     product_name: str
+
 
 class RefundPaymentToExternalRequest(BaseModel):
     payment_intent_id: UUID
