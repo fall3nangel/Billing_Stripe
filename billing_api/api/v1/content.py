@@ -1,21 +1,14 @@
 import uuid
 from http import HTTPStatus
 
-from fastapi import APIRouter, Body, Depends, HTTPException, Request
+from fastapi import APIRouter, Body, Depends, Request
+from fastapi.exceptions import HTTPException
 
 from auth.auth_bearer import auth
 from auth.auth_handler import encode_jwt
 from db.postgres import get_db_service
 from services.db import DBService
-
-from fastapi.exceptions import HTTPException
-from http import HTTPStatus
-from db.postgres import get_db, get_db_service
-from services.db import DBService
-
-from .schemas import (
-    UserRequest
-)
+from .schemas import UserRequest
 
 router = APIRouter()
 
@@ -47,9 +40,7 @@ async def get_access_token(user_id: str | None = None) -> str:
     tags=["content"],
     dependencies=[Depends(auth)],
 )
-async def check_rights(
-    movie_id: str, request: Request, db: DBService = Depends(get_db_service)
-) -> dict:
+async def check_rights(movie_id: str, request: Request, db: DBService = Depends(get_db_service)) -> dict:
     user_id = request.state.user_id
     # user_id = "3fa85f64-5717-4562-b3fc-1c963f66afa6"
     product = await db.get_product_by_movie(str(movie_id))
@@ -69,10 +60,7 @@ async def check_rights(
     description="Регистрация пользователя",
     tags=["content"],
 )
-async def register(
-    data: UserRequest = Body(default=None),
-    db: DBService = Depends(get_db_service)
-) -> str:
+async def register(data: UserRequest = Body(default=None), db: DBService = Depends(get_db_service)) -> str:
     user = await db.get_user_by_login(data.login)
     if user and data.login == user.login:
         raise HTTPException(HTTPStatus.BAD_REQUEST, detail="login exists")
@@ -87,6 +75,7 @@ async def register(
     else:
         raise HTTPException(HTTPStatus.UNAUTHORIZED, detail="user error")
 
+
 @router.post(
     "/login",
     response_model=None,
@@ -94,10 +83,7 @@ async def register(
     description="Вход пользователя",
     tags=["content"],
 )
-async def login(
-    data: UserRequest = Body(default=None),
-    db: DBService = Depends(get_db_service)
-) -> str:
+async def login(data: UserRequest = Body(default=None), db: DBService = Depends(get_db_service)) -> str:
     if not data.login and not data.password:
         raise HTTPException(HTTPStatus.BAD_REQUEST, detail="login error")
     user = await db.get_user_by_login(data.login)

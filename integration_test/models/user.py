@@ -1,6 +1,6 @@
 import uuid
 
-from sqlalchemy import Column, String, TIMESTAMP, Integer
+from sqlalchemy import Column
 from sqlalchemy.dialects.postgresql import UUID
 
 from postgres import Base
@@ -15,4 +15,3 @@ class User(Base):
         unique=True,
         nullable=False,
     )
-

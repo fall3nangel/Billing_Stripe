@@ -21,7 +21,5 @@ class Invoice(Base):
     user_id = Column(UUID(as_uuid=True), nullable=False)
     description = Column(String, unique=True, nullable=False)
     price = Column(DECIMAL(10, 2))
-    start_date = Column(
-        DateTime(timezone=True), server_default=func.now(), nullable=True
-    )
+    start_date = Column(DateTime(timezone=True), server_default=func.now(), nullable=True)
     finish_date = Column(DateTime(timezone=True), nullable=True)

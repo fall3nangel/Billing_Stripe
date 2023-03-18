@@ -1,5 +1,3 @@
-import os
-
 from config.settings import settings
 
 # Database

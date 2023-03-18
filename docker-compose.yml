@@ -1,5 +1,5 @@
 x-debug: &debug-environments
-  DEBUG: True
+  DEBUG: ${DEBUG}
 
 x-services: &services-environments
   PAYMENTSERVICE__URL: http://pay-api:8000
@@ -50,6 +50,7 @@ services:
     networks:
       - movies
     environment:
+      <<: *debug-environments
       <<: *services-environments
       STRIPE_API_KEY: ${STRIPE_API_KEY}
       STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET}
@@ -70,6 +71,7 @@ services:
     networks:
       - movies
     environment:
+      <<: *debug-environments
       <<: *services-environments
       <<: *telegram-environments
     depends_on:

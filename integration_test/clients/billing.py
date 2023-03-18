@@ -84,18 +84,28 @@ class Billing:
             return False
         return True
 
-    def get_payments(self):
-        error, self.last_json = self._send(
-            query="/billing/payments/2023-03-01/2023-04-01",
-            send_type=SendType.get,
-            await_result=httpx.codes.OK,
-        )
-        return self.last_json
+    # def get_payments(self):
+    #     error, self.last_json = self._send(
+    #         query="/billing/payments/2023-03-01/2023-04-01",
+    #         send_type=SendType.get,
+    #         await_result=httpx.codes.OK,
+    #     )
+    #     return self.last_json
     def cancel_payment(self, payment_id: str):
         error, self.last_json = self._send(
             query=f"/billing/cancel-payment/{payment_id}",
             send_type=SendType.delete,
             await_result=httpx.codes.NO_CONTENT,
         )
+        if error:
+            return False
+
+    def get_payments(self):
+        error, self.last_json = self._send(
+            query=f"/billing/payments/2023-01-01/2023-04-01?page=1&size=50",
+            send_type=SendType.get,
+            await_result=httpx.codes.OK,
+        )
+        logging.info(f"--------------> {self.last_json }")
         if error:
             return False

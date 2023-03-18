@@ -6,9 +6,8 @@ Create Date: 2023-03-11 20:56:51.380246
 
 """
 import sqlalchemy as sa
-from sqlalchemy.dialects import postgresql
-
 from alembic import op
+from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision = "954071a37f53"
@@ -60,9 +59,7 @@ def downgrade() -> None:
     op.drop_constraint(None, "invoice", schema="users", type_="unique")
     op.create_table(
         "alembic_version",
-        sa.Column(
-            "version_num", sa.VARCHAR(length=32), autoincrement=False, nullable=False
-        ),
+        sa.Column("version_num", sa.VARCHAR(length=32), autoincrement=False, nullable=False),
         sa.PrimaryKeyConstraint("version_num", name="alembic_version_pkc"),
     )
     op.drop_table("payment", schema="users")

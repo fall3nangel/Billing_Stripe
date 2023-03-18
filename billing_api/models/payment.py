@@ -29,7 +29,5 @@ class Payment(Base):
     description = Column(String, unique=False, nullable=True)
     payment_intent_id = Column(String, unique=False, nullable=True)
     amount = Column(DECIMAL(10, 2))
-    currency = Column(
-        "currency", Enum(Currency, name="currency_enum", create_type=False)
-    )
+    currency = Column("currency", Enum(Currency, name="currency_enum", create_type=False))
     pay_date = Column(DateTime(timezone=True), nullable=True)

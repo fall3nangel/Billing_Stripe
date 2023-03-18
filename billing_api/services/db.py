@@ -1,7 +1,6 @@
 import logging
-from datetime import date, datetime
+from datetime import datetime, timedelta
 
-from dateutil.relativedelta import relativedelta
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 
@@ -48,7 +47,8 @@ class DBService:
     async def update_payment(self, id: str, pay_date: datetime, intent_id: str):
         from models.payment import Payment
 
-        payment = await self.db.execute(select(Payment).filter_by(id=id))
+        res = await self.db.execute(select(Payment).filter_by(id=id))
+        payment = res.scalars().first()
 
         setattr(payment, "pay_date", pay_date)
         setattr(payment, "payment_intent_id", intent_id)
@@ -80,27 +80,24 @@ class DBService:
             user_id=user_id,
             description=f"Счет на оплату {product.name}",
             price=product.price,
-            start_date=datetime.now(),
-            finish_date=datetime.now() + relativedelta(month=1),
+            start_date=datetime.now().replace(tzinfo=None),
+            finish_date=(datetime.now() + timedelta(days=+31)).replace(tzinfo=None),
         )
         self.db.add(invoice)
         await self.db.commit()
 
         return invoice
 
-    async def add_next_invoice(
-        self, user_id: str, product_id: str, price: int, start_date: datetime
-    ):
+    async def add_next_invoice(self, user_id: str, product_id: str, price: int, start_date: datetime):
         from models.invoice import Invoice
-        from models.product import Product
 
         invoice = Invoice(
             product_id=product_id,
             user_id=user_id,
             description=f"Счет на оплату",
             price=price,
-            start_date=start_date,
-            finish_date=start_date + relativedelta(month=1),
+            start_date=start_date.replace(tzinfo=None),
+            finish_date=(start_date + timedelta(days=+31)).replace(tzinfo=None),
         )
         self.db.add(invoice)
         await self.db.commit()
@@ -124,32 +121,20 @@ class DBService:
         from models.product import Product
         from models.user import User
 
-        res1 = await self.db.execute(
-            select(Product)
-            .filter_by(id=product_id)
-            .options(selectinload(Product.movies))
-        )
+        res1 = await self.db.execute(select(Product).filter_by(id=product_id).options(selectinload(Product.movies)))
         product = res1.scalars().first()
-        res2 = await self.db.execute(
-            select(User).filter_by(id=user_id).options(selectinload(User.products))
-        )
+        res2 = await self.db.execute(select(User).filter_by(id=user_id).options(selectinload(User.products)))
         user = res2.scalars().first()
         setattr(user, "products", [product])
         await self.db.commit()
 
         return product
 
-    async def add_payment_to_user(
-        self, payment_id: str, user_id: str, amount: int, currency: str, pay_date: datetime
-    ):
+    async def add_payment_to_user(self, payment_id: str, user_id: str, amount: int, currency: str, pay_date: datetime):
         from models.invoice import Invoice
         from models.payment import Currency, Payment
 
-        res = await self.db.execute(
-            select(Invoice)
-            .filter_by(user_id=user_id)
-            .order_by(Invoice.start_date.desc())
-        )
+        res = await self.db.execute(select(Invoice).filter_by(user_id=user_id).order_by(Invoice.start_date.desc()))
         invoice = res.scalars().first()
 
         payment = Payment(
@@ -165,19 +150,13 @@ class DBService:
         self.db.add(payment)
         await self.db.commit()
 
-        res = await self.db.execute(
-            select(Invoice)
-            .filter_by(user_id=user_id)
-            .order_by(Invoice.start_date.desc())
-        )
+        res = await self.db.execute(select(Invoice).filter_by(user_id=user_id).order_by(Invoice.start_date.desc()))
         invoice = res.scalars().first()
 
         payment = await self.get_last_payment_by_user(user_id, invoice.product_id)
 
         if payment:
-            await self.add_next_invoice(
-                user_id, invoice.product_id, amount, invoice.finish_date
-            )
+            await self.add_next_invoice(user_id, invoice.product_id, amount, invoice.finish_date)
 
         return payment
 
@@ -193,15 +172,9 @@ class DBService:
         from models.product import Product
         from models.user import User
 
-        res1 = await self.db.execute(
-            select(Product)
-            .filter_by(id=product_id)
-            .options(selectinload(Product.movies))
-        )
+        res1 = await self.db.execute(select(Product).filter_by(id=product_id).options(selectinload(Product.movies)))
         product = res1.scalars().first()
-        res2 = await self.db.execute(
-            select(User).filter_by(id=user_id).options(selectinload(User.products))
-        )
+        res2 = await self.db.execute(select(User).filter_by(id=user_id).options(selectinload(User.products)))
         user = res2.scalars().first()
         new_products = [prod for prod in user.products if str(prod.id) != product_id]
         setattr(user, "products", new_products)
@@ -209,7 +182,6 @@ class DBService:
         return product
 
     async def check_payment(self, user_id: str, product_id: str) -> bool:
-        from models.invoice import Invoice
         from models.payment import Payment
 
         res = await self.db.execute(
@@ -223,13 +195,16 @@ class DBService:
         if not payment:
             return False
 
-        res = await self.db.execute(select(Invoice).filter_by(id=payment.invoice_id))
+        if payment.pay_date:
+            return True
+
+        """res = await self.db.execute(select(Invoice).filter_by(id=payment.invoice_id))
         invoice: Invoice = res.scalars().first()
 
         if invoice.start_date.replace(tzinfo=None) <= datetime.now() and (
             invoice.finish_date is None or datetime.now() < invoice.finish_date.replace(tzinfo=None)
         ):
-            return True
+            return True"""
 
         """deadline = datetime.now() - relativedelta(month=1)
 
@@ -241,9 +216,7 @@ class DBService:
         from models.product import Movie, Product
 
         # movie_id = "1fa85f64-5717-4562-b3fc-2c963f66afa4"
-        res = await self.db.execute(
-            select(Product).filter(Product.movies.any(Movie.id.in_([movie_id])))
-        )
+        res = await self.db.execute(select(Product).filter(Product.movies.any(Movie.id.in_([movie_id]))))
 
         return res.scalars().first()
 

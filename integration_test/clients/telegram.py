@@ -17,4 +17,3 @@ class TelegramReporter:
             ),
             headers=self.headers,
         )
-

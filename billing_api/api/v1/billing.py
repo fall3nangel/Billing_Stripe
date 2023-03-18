@@ -3,19 +3,19 @@ import logging
 import uuid
 from datetime import date, datetime
 from http import HTTPStatus
+from typing import Optional
 
 import aiohttp
 from fastapi import APIRouter, Body, Depends, Request
 from fastapi_pagination import Page
-
 from fastapi_pagination.ext.async_sqlalchemy import paginate
 from sqlalchemy import select
 
 from auth.auth_bearer import auth
+from core.config import settings
 from db.postgres import get_db, get_db_service
 from models.payment import Payment
 from services.db import DBService
-
 from .schemas import (
     InvoiceResponse,
     PaymentRequest,
@@ -25,8 +25,6 @@ from .schemas import (
     PaymentToExternalRequest,
     RefundPaymentToExternalRequest,
 )
-
-from core.config import settings
 
 router = APIRouter()
 
@@ -51,8 +49,6 @@ async def add_product(
     db: DBService = Depends(get_db_service),
 ) -> ProductResponse:
     user_id = request.state.user_id
-    # user_id = "3fa85f64-5717-4562-b3fc-1c963f66afa6"
-    # data.id = "3fa85f64-5717-4562-b3fc-2c963f66afa6"
 
     # добавление подписки в профиль пользователя
     await db.add_product_to_user(product_id, user_id)
@@ -151,7 +147,7 @@ async def add_payment(
     # user_id = request.state.user_id
 
     # добавление записи в таблицу платежей
-    # payment = await db.add_payment_to_user(data.user_id, data.amount, data.currency, data.pay_date)
+    # payment = await db.add_payment_to_user(data.order_id, data.user_id, data.amount, "RUB", datetime.now())
 
     # получение платежа
     payment = await db.get_payment(data.order_id)
@@ -231,7 +227,7 @@ async def create_invoice(
     "/payments/{fd}/{td}",
     responses={
         int(HTTPStatus.OK): {
-            "model": Page[PaymentResponse],
+            "model": Page[Optional[PaymentResponse]],
             "description": "Successful Response",
         },
     },
@@ -240,13 +236,13 @@ async def create_invoice(
     tags=["billing"],
     dependencies=[Depends(auth)],
 )
-async def get_payments(fd: date, td: date, request: Request, conn=Depends(get_db)) -> Page[PaymentResponse]:
+async def get_payments(request: Request, fd: date, td: date, conn=Depends(get_db)) -> Page[PaymentResponse]:
     user_id = request.state.user_id
     # user_id = "3fa85f64-5717-4562-b3fc-1c963f66afa6"
-
-    # запрос на получение платежей
-    query = select(Payment).filter(Payment.pay_date >= fd).filter(Payment.pay_date <= td)
-    return await paginate(conn, query)
+    query = select(Payment)  # .filter(Payment.user_id == user_id, Payment.pay_date > fd, Payment.pay_date < td)
+    # query = select(Payment).filter(Payment.user_id == user_id, Payment.pay_date != None)
+    result = await paginate(conn, query)
+    return result
 
 
 @router.get(
@@ -267,7 +263,6 @@ async def get_products(
     db: DBService = Depends(get_db_service),
 ) -> list[ProductResponse]:
     user_id = request.state.user_id
-    # user_id = "3fa85f64-5717-4562-b3fc-1c963f66afa6"
     products = await db.get_all_products()
 
     return [
@@ -279,28 +274,6 @@ async def get_products(
         )
         for p in products
     ]
-
-
-"""
-@router.post(
-    "/test",
-    responses={
-        int(HTTPStatus.CREATED): {
-            "model": bool,
-            "description": "Successful Response",
-        },
-    },
-    summary="Test",
-    description="Test",
-    tags=["billing"],
-    # dependencies=[Depends(auth)],
-)
-async def test(
-    data: PaymentRequest = Body(default=None),
-) -> bool:
-    pay = PaymentToExternalRequest(id="3fa85f64-5717-4562-b3fc-1c963f66afa6", amount=100, currency="RUB", user_id="3fa85f64-5717-4562-b3fc-1c963f66afa6", user_name="ivanov", product_name="test", email="ivanov@test.com")
-    return True
-"""
 
 
 async def request(session, url: str, data: dict):
