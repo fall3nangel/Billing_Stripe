@@ -11,6 +11,10 @@ x-telegram: &telegram-environments
   TELEGRAM__TOKEN: ${TELEGRAM__TOKEN}
   TELEGRAM__CHAT: ${TELEGRAM__CHAT}
 
+x-allure: &allure-environmetns
+  ALLURE__URL: http://allure:5050
+  ALLURE__PROJECT_NAME: default
+
 version: '3.5'
 services:
   admin:
@@ -74,12 +78,14 @@ services:
       <<: *debug-environments
       <<: *services-environments
       <<: *telegram-environments
+      <<: *allure-environmetns
     depends_on:
       - etl
       - pay-api
       - billing
       - postgres
       - stripe-cli
+      - admin
 
   stripe-cli:
     container_name: stripe-cli
@@ -98,6 +104,20 @@ services:
       - ALLOW_EMPTY_PASSWORD=yes
     networks:
       - movies
+
+  allure:
+    image: "frankescobar/allure-docker-service:latest"
+    container_name: allure
+    environment:
+      CHECK_RESULTS_EVERY_SECONDS: NONE
+      KEEP_HISTORY: "TRUE"
+    ports:
+      - "5050:5050"
+    volumes:
+      - ${PWD}/projects:/app/projects
+    networks:
+      - movies
+
 
 networks:
   movies:
