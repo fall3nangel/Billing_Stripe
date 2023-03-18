@@ -26,7 +26,7 @@ def test_1(db_session, initial_data, billing_client, send_telegram_notify):
         assert not billing_client.last_json["allow"], "У пользователя есть права на просмотр фильма"
 
     with step("Ожидание оплаты подписки пользователем в течении 2-х минут"):
-        #send_telegram_notify(f"Необходимо произвести оплату по ссылке\n{checkout_url}")
+        send_telegram_notify(f"Необходимо произвести оплату по ссылке\n{checkout_url}")
         logging.info(f"Необходимо произвести оплату по ссылке\n{checkout_url}")
         start_time = time.time()
         while time.time() < start_time + 120:
