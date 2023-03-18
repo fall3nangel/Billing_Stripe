@@ -48,7 +48,8 @@ class DBService:
     async def update_payment(self, id: str, pay_date: datetime, intent_id: str):
         from models.payment import Payment
 
-        payment = await self.db.execute(select(Payment).filter_by(id=id))
+        res = await self.db.execute(select(Payment).filter_by(id=id))
+        payment = res.scalars().first()
 
         setattr(payment, "pay_date", pay_date)
         setattr(payment, "payment_intent_id", intent_id)
