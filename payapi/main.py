@@ -24,7 +24,7 @@ def send_successful_payment(order_id, user_id, payment_intent_id, amount):
         "payment_intent_id": f"{payment_intent_id}",
         "amount": amount,
     }
-    res = requests.post(url=settings.billing_url, json=dict_to_send)
+    res = requests.post(url=f"{settings.billing_url}/api/v1/billing/add-payment", json=dict_to_send)
     logging.debug("%s", res)
 
 
