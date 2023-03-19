@@ -39,6 +39,6 @@ sequenceDiagram
     BillingAPI->>+Postgres: update_payment
     Postgres->>Postgres: update payment
     Postgres-->>-BillingAPI: 
-    BillingAPI-->>-PayAPI: payment
+    BillingAPI-->>-PayAPI: 
     PayAPI-->>-Stripe: 
 ```
