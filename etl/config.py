@@ -34,7 +34,7 @@ LOG_DEFAULT_HANDLERS = [
 ]
 
 
-LOGGING = {
+LOGGING_CONFIG = {
     "version": 1,
     "disable_existing_loggers": False,
     "formatters": {
@@ -62,8 +62,8 @@ LOGGING = {
 
 
 if settings.debug:
-    LOGGING["root"]["level"] = "DEBUG"
+    LOGGING_CONFIG["root"]["level"] = "DEBUG"
 
-logging_config.dictConfig(LOGGING)
+logging_config.dictConfig(LOGGING_CONFIG)
 
 logging.debug("%s", settings.dict())
