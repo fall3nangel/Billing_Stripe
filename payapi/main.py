@@ -1,5 +1,4 @@
 import json
-import os
 import stripe
 from flasgger import Swagger
 from flask import Flask, jsonify, request
@@ -25,7 +24,7 @@ def send_successful_payment(order_id, user_id, payment_intent_id, amount):
         "payment_intent_id": f"{payment_intent_id}",
         "amount": amount,
     }
-    res = requests.post(f"{settings.billing_url}/api/v1/billing/add-payment", json=dict_to_send)
+    res = requests.post(url=settings.billing_url, json=dict_to_send)
     logging.debug("%s", res)
 
 
@@ -139,8 +138,8 @@ def create_checkout_session():
             customer=customer_id,
             metadata={"order_id": f"{request_data['order_id']}"},
             mode="payment",
-            success_url="http://localhost:8002/success",
-            cancel_url="http://localhost:8002/cancel",
+            success_url=settings.success_url,
+            cancel_url=settings.cancel_url,
             payment_intent_data={
                 "setup_future_usage": "off_session",
                 "metadata": {"order_id": f"{request_data['order_id']}", "user_id": user_id},
