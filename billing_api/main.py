@@ -1,12 +1,14 @@
+from json import JSONEncoder
+from uuid import UUID
+
 import uvicorn
 from fastapi import FastAPI
 from fastapi.openapi.utils import get_openapi
 from fastapi.responses import ORJSONResponse
+from fastapi_pagination import add_pagination
 
-from api.v1.user import invoice
+from api.v1 import billing, content
 from core.config import settings
-from db.postgres import db, Base, engine
-from db.queue import get_rabbitmq, close_rabbitmq
 
 app = FastAPI(
     title=settings.project_name,
@@ -15,6 +17,8 @@ app = FastAPI(
     default_response_class=ORJSONResponse,
     swagger_ui_parameters={"syntaxHighlight": False},
 )
+
+add_pagination(app)
 
 
 def custom_openapi():
@@ -40,22 +44,37 @@ def custom_openapi():
 
 app.openapi = custom_openapi
 
+old_default = JSONEncoder.default
+
+
+def new_default(self, obj):
+    if isinstance(obj, UUID):
+        return str(obj)
+    return old_default(self, obj)
+
+
+JSONEncoder.default = new_default
+
 
 @app.on_event("startup")
 async def startup_event():
-    await get_rabbitmq()
-    async with engine.begin() as conn:
-        #await conn.run_sync(Base.metadata.drop_all)
-        await conn.run_sync(Base.metadata.create_all)
+    # await get_rabbitmq()
+
+    # async with engine.begin() as conn:
+    #     await conn.run_sync(Base.metadata.create_all)
+    pass
 
 
 @app.on_event("shutdown")
 async def shutdown_event():
-    await close_rabbitmq()
-    await db.close()
+    # await close_rabbitmq()
+    # await db.close()
+    pass
 
 
-app.include_router(invoice.router, prefix="/api/v1/user/invoice", tags=["invoice"])
+# app.include_router(invoice.router, prefix="/api/v1/user/invoice", tags=["invoice"])
+app.include_router(billing.router, prefix="/api/v1/billing", tags=["billing"])
+app.include_router(content.router, prefix="/api/v1/content", tags=["content"])
 
 if __name__ == "__main__":
     uvicorn.run(

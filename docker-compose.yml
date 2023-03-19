@@ -1,16 +1,19 @@
-x-postgres: &postgres-environments
-  POSTGRES__USER: ${POSTGRES__USER}
-  POSTGRES__PASSWORD: ${POSTGRES__PASSWORD}
-  POSTGRES__DB: ${POSTGRES__DB}
-  POSTGRES__HOST: "postgres_container"
-
 x-debug: &debug-environments
-  DEBUG: True
+  DEBUG: ${DEBUG}
 
-x-rabbit: &rabbit-environments
-  RABBITMQ__USER: ${RABBITMQ__USER}
-  RABBITMQ__PASSWORD: ${RABBITMQ__PASSWORD}
-  RABBITMQ__SERVER: rabbitmq
+x-services: &services-environments
+  PAYMENTSERVICE__URL: http://pay-api:8000
+  BILLING_URL: http://billing:8000
+  PAYAPI_URL_TEST: http://pay-api:8000
+  BILLING_URL_TEST: http://billing:8000
+
+x-telegram: &telegram-environments
+  TELEGRAM__TOKEN: ${TELEGRAM__TOKEN}
+  TELEGRAM__CHAT: ${TELEGRAM__CHAT}
+
+x-allure: &allure-environmetns
+  ALLURE__URL: http://allure:5050
+  ALLURE__PROJECT_NAME: default
 
 version: '3.5'
 services:
@@ -21,7 +24,6 @@ services:
       - "8000"
     container_name: django
     environment:
-      <<: *postgres-environments
       <<: *debug-environments
       SECRET_KEY: ${SECRET_KEY}
     networks:
@@ -38,38 +40,60 @@ services:
     networks:
       - movies
     environment:
-      <<: *postgres-environments
+      PAYMENTSERVICE__URL: http://pay-api:8000
       <<: *debug-environments
-      <<: *rabbit-environments
+      <<: *services-environments
+
     depends_on:
       - postgres
-      - rabbitmq
+      - redis
 
-  postgres:
-    container_name: postgres_container
-    env_file:
-      - .env
-    image: postgres:13
-    environment:
-      POSTGRES_USER: ${POSTGRES__USER}
-      POSTGRES_PASSWORD: ${POSTGRES__PASSWORD}
-      POSTGRES_DB: ${POSTGRES__DB}
-      PGDATA: /data/postgres
-    volumes:
-       - postgres:/data/postgres
-       - ./sql/create_tables.sql:/docker-entrypoint-initdb.d/create_tables.sql
+  pay-api:
+    container_name: pay-api
+    image: payapi
     networks:
       - movies
-    restart: unless-stopped
-
-  rabbitmq:
-    container_name: rabbitmq
-    image: rabbitmq:3.11.8-management
-    hostname: rabbitmq
-    restart: always
     environment:
-      - RABBITMQ_DEFAULT_USER=${RABBITMQ__USER}
-      - RABBITMQ_DEFAULT_PASS=${RABBITMQ__PASSWORD}
+      <<: *debug-environments
+      <<: *services-environments
+      STRIPE_API_KEY: ${STRIPE_API_KEY}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET}
+      STRIPE_MAX_NET_RETRIES: ${STRIPE_MAX_NET_RETRIES}
+
+  etl:
+    container_name: etl
+    restart: always
+    image: etl
+    networks:
+      - movies
+    depends_on:
+      - postgres
+
+  integration_test:
+    container_name: integration_test
+    image: integration_test
+    networks:
+      - movies
+    environment:
+      <<: *debug-environments
+      <<: *services-environments
+      <<: *telegram-environments
+      <<: *allure-environmetns
+    depends_on:
+      - etl
+      - pay-api
+      - billing
+      - postgres
+      - stripe-cli
+      - admin
+
+  stripe-cli:
+    container_name: stripe-cli
+    image: stripe/stripe-cli
+    environment:
+      API-KEY: ${STRIPE_API_KEY}
+      STRIPE_DEVICE_NAME: name
+    command: "listen --api-key ${STRIPE_API_KEY} --forward-to pay-api:8000/webhook"
     networks:
       - movies
 
@@ -81,10 +105,19 @@ services:
     networks:
       - movies
 
-volumes:
-    postgres:
-      name: graduate_project_postgres
-    pgadmin:
+  allure:
+    image: "frankescobar/allure-docker-service:latest"
+    container_name: allure
+    environment:
+      CHECK_RESULTS_EVERY_SECONDS: NONE
+      KEEP_HISTORY: "TRUE"
+    ports:
+      - "5050:5050"
+    volumes:
+      - ${PWD}/projects:/app/projects
+    networks:
+      - movies
+
 
 networks:
   movies:

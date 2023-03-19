@@ -1,0 +1,40 @@
+x-postgres: &postgres-environments
+  POSTGRES__USER: ${POSTGRES__USER}
+  POSTGRES__PASSWORD: ${POSTGRES__PASSWORD}
+  POSTGRES__DB: ${POSTGRES__DB}
+  POSTGRES__HOST: "postgres_container_test"
+
+version: '3.5'
+services:
+  admin:
+    environment:
+      <<: *postgres-environments
+      SECRET_KEY: ${SECRET_KEY}
+
+  billing:
+    environment:
+      <<: *postgres-environments
+
+  integration_test:
+    environment:
+      <<: *postgres-environments
+
+  postgres:
+    container_name: postgres_container_test
+    env_file:
+      - .env
+    image: postgres:13
+    environment:
+      POSTGRES_USER: ${POSTGRES__USER}
+      POSTGRES_PASSWORD: ${POSTGRES__PASSWORD}
+      POSTGRES_DB: ${POSTGRES__DB}
+      PGDATA: /data/postgres
+    volumes:
+       - ./sql/create_tables.sql:/docker-entrypoint-initdb.d/create_tables.sql
+    networks:
+      - movies
+    restart: unless-stopped
+
+  etl:
+    environment:
+      <<: *postgres-environments

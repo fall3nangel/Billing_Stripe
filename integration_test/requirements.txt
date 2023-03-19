@@ -1,0 +1,10 @@
+pytest==7.2.2
+httpx==0.23.3
+allure-pytest==2.13.0
+backoff==2.2.1
+psycopg2-binary==2.9.5
+sqlalchemy==2.0.6
+pydantic==1.10.6
+python-dotenv==1.0.0
+PyYAML==6.0
+requests==2.28.2

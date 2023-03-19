@@ -1,0 +1,7 @@
+flask==2.2.3
+flasgger==0.9.5
+stripe==5.2.0
+backoff==2.2.1
+pydantic[dotenv]==1.10.5
+gevent==22.10.2
+gunicorn[gevent]==20.1.0
