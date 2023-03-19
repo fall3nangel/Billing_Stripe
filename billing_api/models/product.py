@@ -1,5 +1,4 @@
 import enum
-import enum
 import uuid
 
 from sqlalchemy import (
@@ -16,7 +15,6 @@ from sqlalchemy.orm import relationship
 from db.postgres import Base
 
 
-# PRODUCT_DURATION = "month", "day"
 class ProductDuration(enum.Enum):
     month = 1
     day = 2
