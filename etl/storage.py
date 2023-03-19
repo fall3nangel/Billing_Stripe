@@ -3,7 +3,7 @@ import logging
 from abc import abstractmethod
 from datetime import datetime, date
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 BASE_DIR = Path(__file__).resolve().parent
 
@@ -28,7 +28,7 @@ class BaseStorage:
 
 
 class JsonFileStorage(BaseStorage):
-    def __init__(self, file_path: Optional[str] = None):
+    def __init__(self, file_path: Path | None = None):
         self.file_path = file_path
 
     def save_state(self, state: dict) -> None:

@@ -8,7 +8,7 @@ class BillingMovie(BaseModel):
 
     id: str
     name: str
-    description: str = None
+    description: str | None = None
 
 
 class BillingProduct(BaseModel):

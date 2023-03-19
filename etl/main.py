@@ -29,7 +29,7 @@ def etl():
     :return:
     """
 
-    json_data = JsonFileStorage(file_path=BASE_DIR.joinpath("main_states.json").name)
+    json_data = JsonFileStorage(file_path=BASE_DIR.joinpath("main_states.json"))
     state = State(json_data)
     with psycopg2.connect(**settings.postgres.dict(), cursor_factory=DictCursor) as pg_connect:
         last_time = state.get_state("last_time")

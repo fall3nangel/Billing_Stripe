@@ -10,7 +10,7 @@ class AdminPanelMovie(BaseModel):
 
     id: str
     title: str
-    description: str = None
+    description: str | None = None
     created_at: datetime.datetime
     updated_at: datetime.datetime
 
