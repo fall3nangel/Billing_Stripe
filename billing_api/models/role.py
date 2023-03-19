@@ -28,8 +28,3 @@ class Role(Base):
         nullable=False,
     )
     name = Column(String, nullable=False)
-
-    class Meta:
-        db_table = "role"
-        verbose_name = "role"
-        verbose_name_plural = "roles"

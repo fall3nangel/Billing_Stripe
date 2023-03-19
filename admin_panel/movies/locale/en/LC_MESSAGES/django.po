@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-03-04 09:57+0000\n"
+"POT-Creation-Date: 2023-03-19 11:49+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,6 +18,10 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
+#: movies/apps.py:8
+msgid "movies"
+msgstr ""
+
 #: movies/models.py:36
 msgid "movie"
 msgstr ""
@@ -26,7 +30,7 @@ msgstr ""
 msgid "tv_show"
 msgstr ""
 
-#: movies/models.py:39 movies/models.py:60
+#: movies/models.py:39 movies/models.py:64
 msgid "title"
 msgstr ""
 
@@ -55,25 +59,37 @@ msgid "films"
 msgstr ""
 
 #: movies/models.py:61
+msgid "month"
+msgstr ""
+
+#: movies/models.py:62
+msgid "day"
+msgstr ""
+
+#: movies/models.py:65
 msgid "price"
 msgstr ""
 
-#: movies/models.py:65 movies/models.py:74
+#: movies/models.py:67
+msgid "duration"
+msgstr ""
+
+#: movies/models.py:72 movies/models.py:81
 msgid "product"
 msgstr ""
 
-#: movies/models.py:66
+#: movies/models.py:73
 msgid "products"
 msgstr ""
 
-#: movies/models.py:73
+#: movies/models.py:80
 msgid "filmwork"
 msgstr ""
 
-#: movies/models.py:81
+#: movies/models.py:88
 msgid "filmwork_product"
 msgstr ""
 
-#: movies/models.py:82
+#: movies/models.py:89
 msgid "filmwork_products"
 msgstr ""

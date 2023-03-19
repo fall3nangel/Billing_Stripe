@@ -80,7 +80,6 @@ async def shutdown_event():
     pass
 
 
-# app.include_router(invoice.router, prefix="/api/v1/user/invoice", tags=["invoice"])
 app.include_router(billing.router, prefix="/api/v1/billing", tags=["billing"])
 app.include_router(content.router, prefix="/api/v1/content", tags=["content"])
 

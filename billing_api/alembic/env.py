@@ -1,3 +1,4 @@
+import os
 import sys
 from logging.config import fileConfig
 
@@ -11,6 +12,12 @@ from db.postgres import Base
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
+
+section = config.config_ini_section
+config.set_section_option(section, "POSTGRES__USER", os.environ.get("POSTGRES__USER"))
+config.set_section_option(section, "POSTGRES__PASSWORD", os.environ.get("POSTGRES__PASSWORD"))
+config.set_section_option(section, "POSTGRES__HOST", os.environ.get("POSTGRES__HOST"))
+config.set_section_option(section, "POSTGRES__DB", os.environ.get("POSTGRES__DB"))
 
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.

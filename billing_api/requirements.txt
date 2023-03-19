@@ -9,12 +9,10 @@ python-dotenv==1.0.0
 fastapi-utils==0.2.1
 psycopg2-binary==2.9.5
 pytest
-requests
 backoff==2.2.1
 asyncpg==0.27.0
 alembic==1.9.4
-aiohttp
-aio-pika
+aiohttp==3.8.3
 fastapi_pagination==0.11.4
 pbkdf2==1.3
 python-dateutil==2.8.2
