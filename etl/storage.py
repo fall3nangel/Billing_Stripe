@@ -28,7 +28,7 @@ class BaseStorage:
 
 
 class JsonFileStorage(BaseStorage):
-    def __init__(self, file_path: Path | None = None):
+    def __init__(self, file_path: Path):
         self.file_path = file_path.name
 
     def save_state(self, state: dict) -> None:
