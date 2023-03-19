@@ -35,7 +35,7 @@ services:
     volumes:
        - pgadmin:/var/lib/pgadmin
     ports:
-      - "${PGADMIN_PORT:-5050}:80"
+      - "${PGADMIN_PORT:-8080}:80"
     networks:
       - movies
     restart: unless-stopped
