@@ -1,0 +1,61 @@
+name: Python application
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+
+jobs:
+  quality_code:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install wemake-python-styleguide flake8-html mypy lxml
+
+      - name: Create reports folders
+        run: |
+          mkdir -p reports/wemake/
+          mkdir -p reports/mypy-admin_panel/
+          mkdir -p reports/mypy-billing_api/
+          mkdir -p reports/mypy-payapi/
+          mkdir -p reports/mypy-etl/
+          
+
+      - name: Lint with flake8
+        run: |
+          # stop the build if there are Python syntax errors or undefined names
+          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics 
+          # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
+          flake8 . --exit-zero --max-complexity=10 --max-line-length=127 --format=html --htmldir=reports/wemake/
+
+      - name: Lint with mypy admin_panel
+        run: |
+          mypy ./admin_panel --html-report reports/mypy-admin_panel --ignore-missing-imports \
+            --exclude '(migrations*)/$'
+
+      - name: Lint with mypy billing_api
+        run: |
+          mypy ./billing_api --html-report reports/mypy-billing_api/ --ignore-missing-imports \
+          --exclude '(alembic*)/$' || true 
+
+      - name: Lint with mypy etl
+        run: |
+          mypy ./etl --html-report reports/mypy-etl --ignore-missing-imports || true 
+
+      - name: Lint with mypy payapi
+        run: |
+          mypy ./payapi --html-report reports/mypy-payapi/ --ignore-missing-imports || true 
+
+      - name: Upload reports
+        uses: actions/upload-artifact@v2
+        with:
+          name: reports
+          path: reports/

@@ -5,8 +5,6 @@ from pathlib import Path
 
 from pydantic import BaseSettings, Field
 
-from core.logger import LOGGING
-
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
@@ -31,9 +29,41 @@ class Settings(BaseSettings):
 
 settings = Settings()
 
-if settings.debug:
-    LOGGING["root"]["level"] = "DEBUG"
+LOG_DEFAULT_HANDLERS = [
+    "console",
+]
 
-logging_config.dictConfig(LOGGING)
+
+LOGGING_CONFIG = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "verbose": {"format": "%(asctime)s - %(name)s - %(levelname)s - %(message)s"},
+    },
+    "handlers": {
+        "console": {
+            "level": "DEBUG",
+            "class": "logging.StreamHandler",
+            "formatter": "verbose",
+        },
+    },
+    "loggers": {
+        "": {
+            "handlers": LOG_DEFAULT_HANDLERS,
+            "level": "INFO",
+        },
+    },
+    "root": {
+        "level": "INFO",
+        "formatter": "verbose",
+        "handlers": LOG_DEFAULT_HANDLERS,
+    },
+}
+
+
+if settings.debug:
+    LOGGING_CONFIG["root"]["level"] = "DEBUG"
+
+logging_config.dictConfig(LOGGING_CONFIG)
 
 logging.debug("%s", settings.dict())
