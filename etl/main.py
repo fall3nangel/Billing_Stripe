@@ -25,7 +25,7 @@ step_extractors = [
 @backoff.on_exception(backoff.expo, (psycopg2.OperationalError, psycopg2.DatabaseError))
 def etl():
     """
-    Выгрузка данных из потсгреса в эластик
+    Выгрузка данных из бд панели администратора в бд биллинга
     :return:
     """
 

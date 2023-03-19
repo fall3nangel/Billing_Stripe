@@ -6,9 +6,9 @@ from models.billing import BillingMovie, BillingProduct, BillingProductMoviePair
 
 def movie_converter(movies: list[AdminPanelMovie]) -> list[BillingMovie]:
     """
-    Конвертирование данных в формат хранения эластика
-    :param movies: Список произвдений из БД
-    :return: Список произведение формата эластика
+    Конвертирование данных в формат хранения биллинга
+    :param movies: Список фильмов из панели администратора
+    :return: фильмов произведение формата биллинга
     """
     try:
         converted_data = [
@@ -28,9 +28,9 @@ def movie_converter(movies: list[AdminPanelMovie]) -> list[BillingMovie]:
 
 def product_converter(products: list[AdminPanelProduct]) -> list[BillingProduct]:
     """
-    Конвертирование данных в формат хранения эластика
-    :param products: Список произвдений из БД
-    :return: Список произведение формата эластика
+    Конвертирование данных в формат хранения биллинга
+    :param products: Список продуктов из панели администратора
+    :return: Список продуктов формата биллинга
     """
     try:
         converted_data = [
@@ -53,9 +53,9 @@ def product_movie_pair_converter(
     product_movie_pairs: list[AdminPanelProductMoviePair],
 ) -> list[BillingProductMoviePair]:
     """
-    Конвертирование данных в формат хранения эластика
-    :param product_movie_pairs: Список произвдений из БД
-    :return: Список произведение формата эластика
+    Конвертирование данных в формат хранения биллинга
+    :param product_movie_pairs: Список соответствий фильмов и продуктов из панели администратора
+    :return: Список соответствий фильмов и продуктов формата биллинга
     """
     try:
         converted_data = [
