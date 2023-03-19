@@ -17,7 +17,7 @@ class PostgresExtractor:
         """
         :param connect: Соединение с базой Postgress
         """
-        self.cursor = connect.cursor()
+        self.connect = connect
         self.last_time = last_time if last_time else datetime.datetime.min
         self.limit = settings.fetch_limit
 
@@ -26,21 +26,22 @@ class PostgresExtractor:
         Получение текущего времени сервера Postgress
         :return:
         """
-        self.cursor.execute("select now();")
-        data = self.cursor.fetchall().pop()
+        with self.connect.cursor() as cursor:
+            cursor.execute("select now();")
+            data = cursor.fetchall().pop()
         logging.debug("Expose last time: %s", data[0])
         return data[0]
 
     def get_updated(self, query_executor, validator):
         offset = 0
         while True:
-            query = query_executor(last_time=self.last_time, limit=self.limit, offset=offset)
-            self.cursor.execute(query)
-            try:
-                models_list = [validator(**dict(row)) for row in self.cursor.fetchall()]
-            except ValidationError as error:
-                logging.exception("Ошибка валидации данных postgress \n%s", error)
-                raise error
+            with self.connect.cursor() as cursor:
+                cursor.execute(query_executor(last_time=self.last_time, limit=self.limit, offset=offset))
+                try:
+                    models_list = [validator(**dict(row)) for row in cursor.fetchall()]
+                except ValidationError as error:
+                    logging.exception("%s", error)
+                    raise error
             if not models_list:
                 break
             logging.debug(f"Получено записей - %s", {len(models_list)})
@@ -51,7 +52,6 @@ class PostgresExtractor:
 class PostgresLoader:
     def __init__(self, connect: pg_connection):
         self.connect = connect
-        self.cursor = connect.cursor()
 
     def save_all_data(self, db: str, inserted_data):
         # Получаем список имен полей для вставки
@@ -64,17 +64,17 @@ class PostgresLoader:
         # Список из объектов данных
         inserted_data_list = [tuple(values_row.dict().values()) for values_row in inserted_data]
         logging.debug(inserted_data_list)
-        try:
-            self.cursor.executemany(
-                f"""INSERT INTO {db}({fields_name_str}) VALUES({amount_values_str}) 
-                        ON CONFLICT (id) 
-                        DO UPDATE SET ({fields_name_str}) = ({fields_name_str_with_exclude});""",
-                inserted_data_list,
-            )
-
-        except (Exception, psycopg2.DatabaseError) as error:
-            logging.exception(error)
-            raise error
+        with self.connect.cursor() as cursor:
+            try:
+                cursor.executemany(
+                    f"""INSERT INTO {db}({fields_name_str}) VALUES({amount_values_str}) 
+                            ON CONFLICT (id) 
+                            DO UPDATE SET ({fields_name_str}) = ({fields_name_str_with_exclude});""",
+                    inserted_data_list,
+                )
+            except (Exception, psycopg2.DatabaseError) as error:
+                logging.exception(error)
+                raise error
         logging.info(f"Обработано '{len(inserted_data_list)}' записей таблицы '{db}'")
 
     def commit_data(self):
