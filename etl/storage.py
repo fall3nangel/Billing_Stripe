@@ -30,9 +30,6 @@ class BaseStorage:
 class JsonFileStorage(BaseStorage):
     def __init__(self, file_path: Optional[str] = None):
         self.file_path = file_path
-        # if not os.path.exists(file_path):
-        #     with open(self.file_path, mode="w", encoding="utf-8") as writed_file:
-        #         json.dump({}, writed_file, ensure_ascii=False, indent=4)
 
     def save_state(self, state: dict) -> None:
         """Сохранить состояние в постоянное хранилище"""
