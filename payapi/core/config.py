@@ -15,6 +15,8 @@ class Settings(BaseSettings):
     stripe_api_key: str
     stripe_webhook_secret: str
     billing_url: str
+    success_url: str
+    cancel_url: str
     project_name: str = Field("payapi")
     debug: bool = Field(False)
 
