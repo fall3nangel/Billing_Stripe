@@ -1,3 +1,4 @@
+import json
 import logging
 from enum import Enum
 
@@ -19,10 +20,24 @@ class Billing:
         self.last_json = None
         self.allow_watching = None
 
-    @backoff.on_exception(backoff.expo, (httpx.ReadError, httpx.ConnectError))
+    @backoff.on_exception(backoff.expo, (httpx.ReadError, httpx.ConnectError), max_time=60)
+    def _send(self, query: str, await_result: httpx.codes, send_type: SendType, **kwargs):
+        result: httpx.Response = send_type(f"{self.url}{query}", headers=self.headers, **kwargs)
+        try:
+            logging.debug("%s", result.json())
+        except json.decoder.JSONDecodeError:
+            logging.info("Ответ вернулся не формате json")
+            return True, ""
+        if result.status_code != await_result:
+            self.last_error = f"Выполнение запроса привело к неожидаемому статусу {result.status_code}"
+            return True, ""
+        return False, result.json()
+
     def create_test_user(self):
-        result = httpx.post(
-            f"{self.url}/content/register",
+        error, self.last_json = self._send(
+            query=f"/content/register",
+            send_type=SendType.post,
+            await_result=httpx.codes.OK,
             json=dict(
                 login="test_user_1",
                 fullname="fullname",
@@ -30,26 +45,14 @@ class Billing:
                 email="mail@example.com",
                 phone="+77777777777",
             ),
-            headers=self.headers,
         )
-        if result.status_code != httpx.codes.OK:
-            self.last_error = f"Выполнение запроса привело к ошибке {result.status_code}"
+        if error:
             return False
-        data = result.json()
-        if "access_token" not in data:
+        if "access_token" not in self.last_json:
             self.last_error = "Не обнаружено поле 'access_token' в ответе"
             return False
-        self.headers["Authorization"] = f"Bearer {data['access_token']}"
+        self.headers["Authorization"] = f"Bearer {self.last_json['access_token']}"
         return True
-
-    def _send(self, query: str, await_result: httpx.codes, send_type: SendType, **kwargs):
-        result = send_type(f"{self.url}{query}", headers=self.headers, **kwargs)
-        logging.debug("%s", result)
-        if result.status_code != await_result:
-            self.last_error = f"Выполнение запроса привело к неожидаемому статусу {result.status_code}"
-            return True, ""
-        logging.debug("%s", result.json())
-        return False, result.json()
 
     def get_rights(self, movie_id: str):
         error, self.last_json = self._send(
@@ -88,10 +91,11 @@ class Billing:
         error, self.last_json = self._send(
             query=f"/billing/cancel-payment/{payment_id}",
             send_type=SendType.delete,
-            await_result=httpx.codes.NO_CONTENT,
+            await_result=httpx.codes.OK,
         )
         if error:
             return False
+        return True
 
     def get_payments(self):
         error, self.last_json = self._send(

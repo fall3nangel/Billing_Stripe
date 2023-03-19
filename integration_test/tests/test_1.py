@@ -41,7 +41,15 @@ def test_1(db_session, initial_data, billing_client, send_telegram_notify):
             time.sleep(10)
         else:
             assert False, "За две минуты не было получено подтверждение об оплате"
+        id_payment = billing_client.last_json["items"][0]["id"]
 
     with step("Проверка успешного доступа к контенту после оформления подписки"):
         assert billing_client.get_rights(movie_id=movies[0].id), billing_client.last_error
         assert billing_client.last_json["allow"], "У пользователя нет прав на просмотр фильма"
+
+    with step("Отмена платежа"):
+        assert billing_client.cancel_payment(payment_id=id_payment), billing_client.last_error
+
+    with step("Проверка отсутствия прав у пользователя на просмотр фильма"):
+        assert billing_client.get_rights(movie_id=movies[0].id), billing_client.last_error
+        assert not billing_client.last_json["allow"], "У пользователя есть права на просмотр фильма"

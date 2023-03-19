@@ -35,7 +35,7 @@ class PaymentToExternalRequest(BaseModel):
 
 
 class RefundPaymentToExternalRequest(BaseModel):
-    payment_intent_id: UUID
+    payment_intent_id: str
 
 
 class PaymentRequest(BaseModel):
