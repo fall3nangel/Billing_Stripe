@@ -121,8 +121,3 @@ class User(Base):
             ]
         )
         return hpswd == hpswd_db
-
-    class Meta:
-        db_table = "user"
-        verbose_name = "user"
-        verbose_name_plural = "users"
