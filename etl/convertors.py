@@ -20,7 +20,7 @@ def movie_converter(movies: list[AdminPanelMovie]) -> list[BillingMovie]:
             for movie in movies
         ]
     except Exception as error:
-        logging.exception("Ошибка валидации данных\n%s", error)
+        logging.exception("%s", error)
         raise error
     logging.debug(f"Сконвертировано записей - %s", {len(converted_data)})
     return converted_data
@@ -43,7 +43,7 @@ def product_converter(products: list[AdminPanelProduct]) -> list[BillingProduct]
             for product in products
         ]
     except Exception as error:
-        logging.exception("Ошибка валидации данных\n%s", error)
+        logging.exception("%s", error)
         raise error
     logging.debug(f"Сконвертировано записей - %s", {len(converted_data)})
     return converted_data
@@ -67,7 +67,7 @@ def product_movie_pair_converter(
             for product_movie_pair in product_movie_pairs
         ]
     except Exception as error:
-        logging.exception("Ошибка валидации данных\n%s", error)
+        logging.exception("%s", error)
         raise error
     logging.debug(f"Сконвертировано записей - %s", {len(converted_data)})
     return converted_data
