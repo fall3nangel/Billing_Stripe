@@ -34,22 +34,6 @@ SUBSCRIBE {
     uuid id_customer "id пользователся"
     uuid id_product "id подписок"
 }
-DISCOUNT { 
-    uuid id "id скидки при формировании счета"
-    uuid id_customer "id пользователя"
-    uuid id_product "id подписки"
-    uuid id_movies "id фильма"
-    float amount "скидка"
-}
-PROMOTION {
-    uuid id "id скидки при формировании счета"
-    uuid id_customer "id пользователя"
-    uuid id_product "id подписки"
-    uuid id_movies "id фильма"
-    float discount "скидка"
-    str code_word "Промокод"
-    datetime expiry_dt "Окончания действия промокода"
-}
 PRODUCT {
     uuid id "id подписки" 
     string name "Наименование"
@@ -68,13 +52,9 @@ PRODUCT_MOVIE {
 }
 INVOICE }|--|| PRODUCT: has
 PAYMENT }|--|| INVOICE: has
-CUSTOMER  ||--|| PROMOTION: has
 CUSTOMER  ||--}| INVOICE: has
 CUSTOMER  ||--|| SUBSCRIBE: has
-CUSTOMER  ||--|| DISCOUNT: has
 SUBSCRIBE  ||--|| PRODUCT: has
-DISCOUNT }|--|| PRODUCT: has
-PROMOTION ||--|| PRODUCT: has
 PRODUCT ||--|{ PRODUCT_MOVIE: has
 PRODUCT_MOVIE ||--|{ MOVIE: has
 ```
