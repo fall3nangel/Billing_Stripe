@@ -1,7 +1,4 @@
 # Биллинг. Проектная работа дипломного сервиса
-
-https://github.com/dimkaddi/graduate_work
-
 Для проверки взаимодействия между сервисами разработан интеграционный тест, 
 позволяющий провести типовые операции, которые делает пользователь во время покупки подписки
 на фильмы.
@@ -107,4 +104,4 @@ etl  | 2023-03-18 10:59:54,227 - root - INFO - Сохранено состоян
 ```
 
 ## Описание взаимодействия
-Схема https://github.com/dimkaddi/graduate_work/blob/main/architecture/components.md
+[Схема](https://github.com/vadim-miroshnik/Billing_Stripe/blob/main/architecture/components.md)
